@@ -2,9 +2,10 @@ import { createClient } from '@/utils/supabase/server'
 import EventForm from '../event-form'
 import { notFound } from 'next/navigation'
 
-export default async function EditEventPage({ params }: { params: { id: string } }) {
+export default async function EditEventPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const supabase = await createClient()
-  const { data: event } = await supabase.from('events').select('*').eq('id', params.id).single()
+  const { data: event } = await supabase.from('events').select('*').eq('id', id).single()
 
   if (!event) {
     notFound()

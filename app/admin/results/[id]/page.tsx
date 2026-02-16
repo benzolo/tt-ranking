@@ -3,11 +3,12 @@ import { notFound } from 'next/navigation'
 import ResultForm from './result-form'
 import { deleteResult, recalculateEventPoints } from '../actions'
 
-export default async function EventResultsPage({ params }: { params: { id: string } }) {
+export default async function EventResultsPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const supabase = await createClient()
   
   // Fetch event details
-  const { data: event } = await supabase.from('events').select('*').eq('id', params.id).single()
+  const { data: event } = await supabase.from('events').select('*').eq('id', id).single()
   
   if (!event) {
     notFound()
@@ -20,8 +21,13 @@ export default async function EventResultsPage({ params }: { params: { id: strin
   const { data: results } = await supabase
     .from('results')
     .select('*, players(*)')
-    .eq('event_id', params.id)
+    .eq('event_id', id)
     .order('position', { ascending: true })
+
+  const enabledCategories = []
+  if (event.has_egyes) enabledCategories.push('Egyes')
+  if (event.has_paros) enabledCategories.push('Páros')
+  if (event.has_vegyes) enabledCategories.push('Vegyes')
 
   return (
     <div className="space-y-8">
@@ -32,11 +38,17 @@ export default async function EventResultsPage({ params }: { params: { id: strin
             <span>•</span>
             <span>{event.type}</span>
             <span>•</span>
-            <span>{event.age_category} {event.category}</span>
+            <span>{event.age_category}</span>
+            <span>•</span>
+            <div className="flex gap-2">
+              {event.has_egyes && <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-md text-xs font-medium">Egyes</span>}
+              {event.has_paros && <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-md text-xs font-medium">Páros</span>}
+              {event.has_vegyes && <span className="px-2 py-0.5 bg-purple-100 text-purple-800 rounded-md text-xs font-medium">Vegyes</span>}
+            </div>
          </div>
       </div>
 
-      <ResultForm eventId={event.id} players={allPlayers || []} />
+      <ResultForm eventId={event.id} players={allPlayers || []} enabledCategories={enabledCategories} />
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
@@ -46,7 +58,7 @@ export default async function EventResultsPage({ params }: { params: { id: strin
             </div>
             <form action={async () => {
               'use server';
-              await recalculateEventPoints(params.id);
+              await recalculateEventPoints(id);
             }}>
               <button 
                 type="submit" 
@@ -64,6 +76,7 @@ export default async function EventResultsPage({ params }: { params: { id: strin
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider w-20">Pos</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Player</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Club</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Category</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Points</th>
               <th scope="col" className="relative px-6 py-3">
                 <span className="sr-only">Actions</span>
@@ -82,11 +95,20 @@ export default async function EventResultsPage({ params }: { params: { id: strin
                      {/* @ts-ignore */}
                     {result.players?.club || '-'}
                 </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${
+                        result.category === 'Egyes' ? 'bg-emerald-100 text-emerald-800' : 
+                        result.category === 'Páros' ? 'bg-blue-100 text-blue-800' : 
+                        'bg-purple-100 text-purple-800'
+                    }`}>
+                        {result.category}
+                    </span>
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-emerald-600">{result.points} pts</td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <form action={async () => {
                       'use server';
-                      await deleteResult(params.id, result.id);
+                      await deleteResult(id, result.id);
                   }}>
                     <button type="submit" className="text-slate-400 hover:text-red-600 transition-colors" title="Remove Result">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">

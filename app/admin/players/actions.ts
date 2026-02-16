@@ -8,6 +8,7 @@ import { requireRole } from '@/utils/supabase/roles'
 
 const PlayerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
+  license_id: z.string().optional(),
   gender: z.enum(["Male", "Female"]),
   club: z.string().optional(),
   birth_date: z.string().optional().or(z.literal('')),
@@ -19,6 +20,7 @@ export async function createPlayer(prevState: any, formData: FormData) {
   
   const rawData = {
     name: formData.get('name'),
+    license_id: formData.get('license_id'),
     gender: formData.get('gender'),
     club: formData.get('club'),
     birth_date: formData.get('birth_date'),
@@ -33,10 +35,11 @@ export async function createPlayer(prevState: any, formData: FormData) {
     }
   }
 
-  const { name, gender, club, birth_date } = validatedFields.data
+  const { name, license_id, gender, club, birth_date } = validatedFields.data
 
   const { error } = await supabase.from('players').insert({
     name,
+    license_id: license_id || null,
     gender,
     club: club || null,
     birth_date: birth_date || null,
@@ -58,6 +61,7 @@ export async function updatePlayer(id: string, prevState: any, formData: FormDat
   
   const rawData = {
     name: formData.get('name'),
+    license_id: formData.get('license_id'),
     gender: formData.get('gender'),
     club: formData.get('club'),
     birth_date: formData.get('birth_date'),
@@ -72,10 +76,11 @@ export async function updatePlayer(id: string, prevState: any, formData: FormDat
     }
   }
 
-  const { name, gender, club, birth_date } = validatedFields.data
+  const { name, license_id, gender, club, birth_date } = validatedFields.data
 
   const { error } = await supabase.from('players').update({
     name,
+    license_id: license_id || null,
     gender,
     club: club || null,
     birth_date: birth_date || null,

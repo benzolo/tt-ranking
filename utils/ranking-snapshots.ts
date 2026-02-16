@@ -157,52 +157,84 @@ async function getRankingsForSnapshot(gender?: string, ageCategory?: string): Pr
   const supabase = await createClient()
   const today = new Date().toISOString()
 
-  let query = supabase
+  // 1. Fetch all results from valid events join with players and events
+  const { data, error } = await supabase
     .from('results')
     .select(`
       points,
+      category,
       player:players!inner (id, name, gender, club, birth_date),
-      event:events!inner (id, validity_date, age_category)
+      event:events!inner (id, type, date, validity_date, age_category)
     `)
     .gte('event.validity_date', today)
-
-  if (gender) {
-    query = query.eq('player.gender', gender)
-  }
-
-  if (ageCategory) {
-    query = query.eq('event.age_category', ageCategory)
-  }
-
-  const { data: results, error } = await query
-
-  if (error || !results) {
-    console.error('Error fetching results:', error)
+  
+  if (error || !data) {
+    console.error('Error fetching rankings for snapshot:', error)
     return []
   }
 
-  // Aggregate points by player
-  const playerStats = new Map<string, RankingEntry>()
+  // 2. Group by player
+  const playerGroups = new Map<string, any[]>()
+  data.forEach((r: any) => {
+    // Filter by gender if provided
+    if (gender && r.player.gender !== gender) return
+    // Filter by age category if provided
+    if (ageCategory && r.event.age_category !== ageCategory) return
 
-  for (const result of results) {
-    const player = result.player as any
-    const playerId = player.id
+    if (!playerGroups.has(r.player.id)) {
+      playerGroups.set(r.player.id, [])
+    }
+    playerGroups.get(r.player.id)?.push(r)
+  })
 
-    if (!playerStats.has(playerId)) {
-      playerStats.set(playerId, {
-        playerId,
-        playerName: player.name,
-        club: player.club,
-        gender: player.gender,
-        totalPoints: 0,
-        eventsCount: 0,
-      })
+  // 3. Process each player's results
+  const rankingEntries: RankingEntry[] = []
+
+  playerGroups.forEach((results, playerId) => {
+    const player = results[0].player
+
+    // A. Group by event to sum points across categories
+    const eventGroups = new Map<string, { totalPoints: number, type: string, date: string }>()
+    
+    results.forEach(r => {
+      const existing = eventGroups.get(r.event.id) || { totalPoints: 0, type: r.event.type, date: r.event.date }
+      existing.totalPoints += r.points
+      eventGroups.set(r.event.id, existing)
+    })
+
+    // B. Sort events by points descending
+    const sortedEvents = Array.from(eventGroups.values())
+      .sort((a, b) => b.totalPoints - a.totalPoints)
+
+    // C. Apply Top 6 / II. osztály rules
+    let totalPoints = 0
+    let eventsCount = 0
+    let iiOsztalyCount = 0
+
+    for (const event of sortedEvents) {
+      if (eventsCount >= 6) break
+
+      if (event.type === 'II. osztály') {
+        if (iiOsztalyCount < 2) {
+          totalPoints += event.totalPoints
+          eventsCount++
+          iiOsztalyCount++
+        }
+      } else {
+        totalPoints += event.totalPoints
+        eventsCount++
+      }
     }
 
-    const stats = playerStats.get(playerId)!
-    stats.totalPoints += result.points || 0
-    stats.eventsCount += 1
-  }
+    rankingEntries.push({
+      playerId: player.id,
+      playerName: player.name,
+      gender: player.gender,
+      club: player.club,
+      totalPoints,
+      eventsCount
+    })
+  })
 
-  return Array.from(playerStats.values()).sort((a, b) => b.totalPoints - a.totalPoints)
+  return rankingEntries.sort((a, b) => b.totalPoints - a.totalPoints)
 }

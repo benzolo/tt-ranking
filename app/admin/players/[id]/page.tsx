@@ -2,9 +2,10 @@ import { createClient } from '@/utils/supabase/server'
 import PlayerForm from '../player-form'
 import { notFound } from 'next/navigation'
 
-export default async function EditPlayerPage({ params }: { params: { id: string } }) {
+export default async function EditPlayerPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const supabase = await createClient()
-  const { data: player } = await supabase.from('players').select('*').eq('id', params.id).single()
+  const { data: player } = await supabase.from('players').select('*').eq('id', id).single()
 
   if (!player) {
     notFound()

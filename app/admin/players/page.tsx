@@ -2,12 +2,25 @@ import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
 import { deletePlayer } from './actions'
 
-export default async function PlayersPage() {
+export default async function PlayersPage({
+  searchParams,
+}: {
+  searchParams: { search?: string }
+}) {
   const supabase = await createClient()
-  const { data: players, error } = await supabase
+  const search = searchParams.search || ''
+  
+  let query = supabase
     .from('players')
     .select('*')
     .order('name', { ascending: true })
+  
+  // Apply search filter if provided
+  if (search) {
+    query = query.or(`name.ilike.%${search}%,license_id.ilike.%${search}%`)
+  }
+  
+  const { data: players, error } = await query
 
   if (error) {
     return <div>Error loading players</div>
@@ -25,11 +38,25 @@ export default async function PlayersPage() {
         </Link>
       </div>
 
+      {/* Search Bar */}
+      <div className="mb-4">
+        <form action="/admin/players" method="get">
+          <input
+            type="text"
+            name="search"
+            defaultValue={search}
+            placeholder="Search by name or license ID..."
+            className="w-full max-w-md px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+          />
+        </form>
+      </div>
+
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <table className="min-w-full divide-y divide-slate-200">
           <thead className="bg-slate-50">
             <tr>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Name</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">License ID</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Gender</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Club</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Birth Date</th>
@@ -42,6 +69,7 @@ export default async function PlayersPage() {
             {players?.map((player) => (
               <tr key={player.id} className="hover:bg-slate-50 transition-colors">
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{player.name}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{player.license_id || '-'}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{player.gender}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{player.club || '-'}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{player.birth_date ? new Date(player.birth_date).toLocaleDateString() : '-'}</td>
@@ -59,8 +87,8 @@ export default async function PlayersPage() {
             ))}
             {players?.length === 0 && (
                 <tr>
-                    <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
-                        No players found. Create one to get started.
+                    <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
+                        {search ? `No players found matching "${search}"` : 'No players found. Create one to get started.'}
                     </td>
                 </tr>
             )}

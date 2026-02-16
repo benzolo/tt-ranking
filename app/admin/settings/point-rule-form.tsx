@@ -55,23 +55,23 @@ export default function PointRuleForm() {
             id="event_type" 
             className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-2 border"
           >
-            <option value="Tournament">Tournament</option>
-            <option value="League">League</option>
+            <option value="OB">OB</option>
+            <option value="I. osztály">I. osztály</option>
+            <option value="II. osztály">II. osztály</option>
+            <option value="TOP">TOP</option>
+            <option value="Megye">Megye</option>
           </select>
         </div>
 
         <div>
-           <label htmlFor="category" className="block text-sm font-medium text-slate-700">Category (Age)</label>
+           <label htmlFor="category" className="block text-sm font-medium text-slate-700">Category</label>
             <select 
             name="category" 
             id="category" 
             className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-2 border"
             >
-            <option value="Senior">Senior</option>
-            <option value="U19">U19</option>
-            <option value="U15">U15</option>
-            <option value="U13">U13</option>
-            <option value="U11">U11</option>
+            <option value="Egyes">Egyes</option>
+            <option value="Páros">Páros</option>
             </select>
         </div>
 

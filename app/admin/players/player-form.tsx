@@ -44,6 +44,19 @@ export default function PlayerForm({ player }: { player?: any }) {
       </div>
 
       <div>
+        <label htmlFor="license_id" className="block text-sm font-medium text-slate-700">License ID (Optional)</label>
+        <input 
+          type="text" 
+          name="license_id" 
+          id="license_id" 
+          defaultValue={player?.license_id || ''}
+          placeholder="e.g., 12345"
+          className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-2 border"
+        />
+        {state?.errors?.license_id && <p className="text-red-500 text-xs mt-1">{state.errors.license_id[0]}</p>}
+      </div>
+
+      <div>
         <label htmlFor="gender" className="block text-sm font-medium text-slate-700">Gender</label>
         <select 
           name="gender" 

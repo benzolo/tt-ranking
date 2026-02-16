@@ -12,7 +12,12 @@ const EventSchema = z.object({
   date: z.string().refine((date) => new Date(date).toString() !== 'Invalid Date', { message: "Invalid Date" }),
   validity_date: z.string().refine((date) => new Date(date).toString() !== 'Invalid Date', { message: "Invalid Date" }),
   age_category: z.string().min(1, "Age Category is required"),
-  category: z.enum(["Singles", "Doubles", "Mixed"]),
+  has_egyes: z.boolean().default(false),
+  has_paros: z.boolean().default(false),
+  has_vegyes: z.boolean().default(false),
+}).refine(data => data.has_egyes || data.has_paros || data.has_vegyes, {
+  message: "At least one category must be selected",
+  path: ["has_egyes"] // Hooking it to one of them for error display
 })
 
 export async function createEvent(prevState: any, formData: FormData) {
@@ -25,7 +30,9 @@ export async function createEvent(prevState: any, formData: FormData) {
     date: formData.get('date'),
     validity_date: formData.get('validity_date'),
     age_category: formData.get('age_category'),
-    category: formData.get('category'),
+    has_egyes: formData.get('has_egyes') === 'true',
+    has_paros: formData.get('has_paros') === 'true',
+    has_vegyes: formData.get('has_vegyes') === 'true',
   }
 
   const validatedFields = EventSchema.safeParse(rawData)
@@ -38,7 +45,7 @@ export async function createEvent(prevState: any, formData: FormData) {
     }
   }
 
-  const { name, type, date, validity_date, age_category, category } = validatedFields.data
+  const { name, type, date, validity_date, age_category, has_egyes, has_paros, has_vegyes } = validatedFields.data
 
   const { error } = await supabase.from('events').insert({
     name,
@@ -46,7 +53,9 @@ export async function createEvent(prevState: any, formData: FormData) {
     date,
     validity_date,
     age_category,
-    category,
+    has_egyes,
+    has_paros,
+    has_vegyes,
   })
 
   if (error) {
@@ -70,7 +79,9 @@ export async function updateEvent(id: string, prevState: any, formData: FormData
     date: formData.get('date'),
     validity_date: formData.get('validity_date'),
     age_category: formData.get('age_category'),
-    category: formData.get('category'),
+    has_egyes: formData.get('has_egyes') === 'true',
+    has_paros: formData.get('has_paros') === 'true',
+    has_vegyes: formData.get('has_vegyes') === 'true',
   }
 
   const validatedFields = EventSchema.safeParse(rawData)
@@ -82,7 +93,7 @@ export async function updateEvent(id: string, prevState: any, formData: FormData
     }
   }
 
-  const { name, type, date, validity_date, age_category, category } = validatedFields.data
+  const { name, type, date, validity_date, age_category, has_egyes, has_paros, has_vegyes } = validatedFields.data
 
   const { error } = await supabase.from('events').update({
     name,
@@ -90,7 +101,9 @@ export async function updateEvent(id: string, prevState: any, formData: FormData
     date,
     validity_date,
     age_category,
-    category,
+    has_egyes,
+    has_paros,
+    has_vegyes,
   }).eq('id', id)
 
   if (error) {

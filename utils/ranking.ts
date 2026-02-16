@@ -13,31 +13,14 @@ export async function getRankings(gender?: string, ageCategory?: string): Promis
   const supabase = await createClient()
   const today = new Date().toISOString()
 
-  // Start building the query
-  // We need players and their sum of points from valid events
-  // This is complex in pure Supabase JS client without a view, but let's try.
-  // Strategy: Fetch all valid results, then aggregate in JS. 
-  // For scalability, a Database View or Function is better, but for now JS aggregation is fine for < 1000 players.
-
-  let query = supabase
-    .from('results')
-    .select(`
-      points,
-      player:players (id, name, gender, club, birth_date),
-      event:events (id, validity_date, age_category)
-    `)
-    .gte('event.validity_date', today) // Validity check
-  
-  // Note: Filtering on joined tables in Supabase (Postgrest) requires the spread operator usually or specific syntax.
-  // simpler to fetch valid events first? Or just fetch all and filter in JS.
-  // Let's rely on JS filtering for flexibility and simplicity first.
-  
+  // 1. Fetch all results from valid events join with players and events
   const { data, error } = await supabase
     .from('results')
     .select(`
       points,
+      category,
       player:players!inner (id, name, gender, club, birth_date),
-      event:events!inner (id, validity_date, age_category)
+      event:events!inner (id, type, date, validity_date, age_category)
     `)
     .gte('event.validity_date', today)
   
@@ -46,43 +29,71 @@ export async function getRankings(gender?: string, ageCategory?: string): Promis
     return []
   }
 
-  // Aggregate
-  const playerStats = new Map<string, RankingEntry>()
-
+  // 2. Group by player
+  const playerGroups = new Map<string, any[]>()
   data.forEach((r: any) => {
-    // Filter by filters if provided
+    // Filter by gender if provided
     if (gender && r.player.gender !== gender) return
-    if (ageCategory && r.event.age_category !== ageCategory) return 
-    // Wait, age category filtering usually means "Ranking for Age Category X". 
-    // Does a U19 player show up in Senior ranking? usually yes if they play senior events.
-    // If the ranking is strict "U19 Ranking", it should only include points from U19 events? 
-    // Or points earned by U19 players? 
-    // Requirement check: "Rankings need to be updated regularly... with events having a validity period."
-    // Usually: Rankings are by category. "U19 Ranking" = Points earned in U19 events? Or just eligible players?
-    // Let's assume Filter = Points earned in that category's events.
-    
-    // Actually, usually a player has one "Total Points" or points per list.
-    // Let's assume the user wants to filter the *List* of rankings.
-    // If I select "U19", I want to see the U19 Ranking List.
-    // Standard TT: Points earned in a category contribute to that category's ranking.
-    
-    // Let's stick to: Valid Results matching the criteria.
+    // Filter by age category if provided
+    if (ageCategory && r.event.age_category !== ageCategory) return
 
-    if (ageCategory && r.event.age_category !== ageCategory) return;
-    
-    const current = playerStats.get(r.player.id) || {
-      playerId: r.player.id,
-      name: r.player.name,
-      gender: r.player.gender,
-      club: r.player.club,
-      totalPoints: 0,
-      eventsCount: 0
+    if (!playerGroups.has(r.player.id)) {
+      playerGroups.set(r.player.id, [])
     }
-
-    current.totalPoints += r.points
-    current.eventsCount += 1
-    playerStats.set(r.player.id, current)
+    playerGroups.get(r.player.id)?.push(r)
   })
 
-  return Array.from(playerStats.values()).sort((a, b) => b.totalPoints - a.totalPoints)
+  // 3. Process each player's results
+  const rankingEntries: RankingEntry[] = []
+
+  playerGroups.forEach((results, playerId) => {
+    const player = results[0].player
+
+    // Step A: Group by event to sum points across categories (Egyes + Páros + Vegyes)
+    const eventGroups = new Map<string, { totalPoints: number, type: string, date: string }>()
+    
+    results.forEach(r => {
+      const existing = eventGroups.get(r.event.id) || { totalPoints: 0, type: r.event.type, date: r.event.date }
+      existing.totalPoints += r.points
+      eventGroups.set(r.event.id, existing)
+    })
+
+    // Step B: Sort events by total points descending
+    const sortedEvents = Array.from(eventGroups.values())
+      .sort((a, b) => b.totalPoints - a.totalPoints)
+
+    // Step C: Apply ranking selection rules:
+    // - Top 6 events count total
+    // - Maximum 2 from "II. osztály" count
+    let totalPoints = 0
+    let eventsCount = 0
+    let iiOsztalyCount = 0
+
+    for (const event of sortedEvents) {
+      if (eventsCount >= 6) break
+
+      if (event.type === 'II. osztály') {
+        if (iiOsztalyCount < 2) {
+          totalPoints += event.totalPoints
+          eventsCount++
+          iiOsztalyCount++
+        }
+      } else {
+        totalPoints += event.totalPoints
+        eventsCount++
+      }
+    }
+
+    rankingEntries.push({
+      playerId: player.id,
+      name: player.name,
+      gender: player.gender,
+      club: player.club,
+      totalPoints,
+      eventsCount
+    })
+  })
+
+  // 4. Sort ranking by total points
+  return rankingEntries.sort((a, b) => b.totalPoints - a.totalPoints)
 }
