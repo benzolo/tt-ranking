@@ -4,6 +4,7 @@ import { useFormStatus } from 'react-dom'
 import { addResult } from '../actions'
 import { useRef } from 'react'
 import { createClient } from '@/utils/supabase/client' // Use client-side client if needed for validtion, but actions use server.
+import { ALLOWED_POSITIONS } from '@/utils/constants'
 
 function SubmitButton() {
   const { pending } = useFormStatus()
@@ -71,14 +72,16 @@ export default function ResultForm({ eventId, players, enabledCategories }: {
 
         <div>
           <label htmlFor="position" className="block text-sm font-medium text-slate-700">Helyezés</label>
-          <input 
-            type="number" 
+          <select 
             name="position" 
             id="position" 
-            min="1"
             required
             className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-2 border"
-          />
+          >
+             {ALLOWED_POSITIONS.map((pos) => (
+                <option key={pos} value={pos}>{pos}</option>
+            ))}
+          </select>
         </div>
 
         <div>

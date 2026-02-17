@@ -5,10 +5,12 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { requireRole } from '@/utils/supabase/roles'
 
+import { ALLOWED_POSITIONS } from '@/utils/constants'
+
 const PointRuleSchema = z.object({
   event_type: z.string().min(1, "Event Type is required"),
   category: z.string().min(1, "Category is required"),
-  position: z.number().min(1, "Position must be at least 1"),
+  position: z.enum(ALLOWED_POSITIONS),
   points: z.number().min(0, "Points must be positive"),
 })
 
@@ -19,7 +21,7 @@ export async function createPointRule(prevState: any, formData: FormData) {
   const rawData = {
     event_type: formData.get('event_type'),
     category: formData.get('category'),
-    position: parseInt(formData.get('position') as string),
+    position: formData.get('position'),
     points: parseInt(formData.get('points') as string),
   }
 

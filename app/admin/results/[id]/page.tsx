@@ -22,7 +22,10 @@ export default async function EventResultsPage({ params }: { params: Promise<{ i
     .from('results')
     .select('*, players(*)')
     .eq('event_id', id)
-    .order('position', { ascending: true })
+    
+  const sortedResults = results?.sort((a, b) => {
+     return a.position.localeCompare(b.position, undefined, { numeric: true, sensitivity: 'base' })
+  })
 
   const enabledCategories = []
   if (event.has_egyes) enabledCategories.push('Egyes')
@@ -84,7 +87,7 @@ export default async function EventResultsPage({ params }: { params: Promise<{ i
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-slate-200">
-            {results?.map((result) => (
+            {sortedResults?.map((result) => (
               <tr key={result.id} className="hover:bg-slate-50 transition-colors">
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-900">#{result.position}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">

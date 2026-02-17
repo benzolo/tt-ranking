@@ -9,7 +9,16 @@ export default async function SettingsPage() {
     .select('*')
     .order('event_type')
     .order('category')
-    .order('position', { ascending: true })
+
+  const sortedRules = rules?.sort((a, b) => {
+     // If we want to sort by allowed positions order:
+     // const indexA = ALLOWED_POSITIONS.indexOf(a.position as any);
+     // const indexB = ALLOWED_POSITIONS.indexOf(b.position as any);
+     // return indexA - indexB; // This would work if we import ALLOWED_POSITIONS
+     
+     // Or a simple natural sort:
+     return a.position.localeCompare(b.position, undefined, { numeric: true, sensitivity: 'base' })
+  })
 
   return (
     <div>
@@ -35,7 +44,7 @@ export default async function SettingsPage() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-slate-200">
-            {rules?.map((rule) => (
+            {sortedRules?.map((rule) => (
               <tr key={rule.id} className="hover:bg-slate-50 transition-colors">
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">{rule.event_type}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{rule.category}</td>

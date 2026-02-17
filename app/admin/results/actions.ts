@@ -5,10 +5,12 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { requireRole } from '@/utils/supabase/roles'
 
+import { ALLOWED_POSITIONS } from '@/utils/constants'
+
 const ResultSchema = z.object({
   player_id: z.string().uuid("Invalid Player ID"),
   category: z.enum(["Egyes", "Páros", "Vegyes"]),
-  position: z.number().min(1, "Position must be at least 1"),
+  position: z.enum(ALLOWED_POSITIONS),
   points: z.number().min(0, "Points must be positive").optional(),
 })
 
@@ -18,7 +20,7 @@ export async function addResult(eventId: string, prevState: any, formData: FormD
   
   const playerId = formData.get('player_id') as string
   const category = formData.get('category') as "Egyes" | "Páros" | "Vegyes"
-  const position = parseInt(formData.get('position') as string)
+  const position = formData.get('position') as string
   const manualPoints = formData.get('points') ? parseInt(formData.get('points') as string) : undefined
 
   // 1. Validate Input

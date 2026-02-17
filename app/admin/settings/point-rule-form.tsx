@@ -4,6 +4,7 @@ import { useActionState, useEffect } from 'react'
 import { useFormStatus } from 'react-dom'
 import { createPointRule } from './actions'
 import { useRef } from 'react'
+import { ALLOWED_POSITIONS } from '@/utils/constants'
 
 function SubmitButton() {
   const { pending } = useFormStatus()
@@ -77,14 +78,15 @@ export default function PointRuleForm() {
 
         <div>
           <label htmlFor="position" className="block text-sm font-medium text-slate-700">Position</label>
-          <input 
-            type="number" 
+          <select 
             name="position" 
             id="position" 
-            min="1"
-            required
             className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-2 border"
-          />
+          >
+            {ALLOWED_POSITIONS.map((pos) => (
+                <option key={pos} value={pos}>{pos}</option>
+            ))}
+          </select>
         </div>
 
         <div>
