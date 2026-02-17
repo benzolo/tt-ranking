@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { getPlayerRankingHistory } from '@/utils/ranking-snapshots'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import RankingChart from '@/components/ranking-chart'
 
 export default async function PlayerProfile({ params }: { params: { id: string } }) {
@@ -33,11 +34,25 @@ export default async function PlayerProfile({ params }: { params: { id: string }
   const rankingHistory = await getPlayerRankingHistory(id)
 
   // Transform ranking history for chart
-  const chartData = rankingHistory.map(snapshot => ({
-    date: new Date(snapshot.snapshot_date).toLocaleDateString('hu-HU', { month: 'short', day: 'numeric' }),
-    rank: snapshot.rank_position,
-    points: snapshot.total_points,
-  }))
+  // Transform ranking history for chart
+  const chartData = rankingHistory.map(snapshot => {
+    // Find the latest event date prior to this snapshot
+    // This represents the "Effective Date" of the ranking
+    const effectiveEvent = results?.find(r => {
+      const eventDate = (r.event as any).date
+      return eventDate <= snapshot.snapshot_date
+    })
+
+    const dateToUse = effectiveEvent 
+      ? (effectiveEvent.event as any).date 
+      : snapshot.snapshot_date
+
+    return {
+      date: new Date(dateToUse).toLocaleDateString('hu-HU', { month: 'short', day: 'numeric' }),
+      rank: snapshot.rank_position,
+      points: snapshot.total_points,
+    }
+  })
 
   const latestSnapshot = rankingHistory[rankingHistory.length - 1]
   const currentRank = latestSnapshot?.rank_position
@@ -51,9 +66,33 @@ export default async function PlayerProfile({ params }: { params: { id: string }
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200">
       {/* Decorative background elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-emerald-500/5 blur-[120px] rounded-full"></div>
-        <div className="absolute bottom-0 left-0 w-[50%] h-[50%] bg-blue-500/5 blur-[120px] rounded-full"></div>
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(16,185,129,0.05),rgba(15,23,42,1))]"></div>
+        <svg className="absolute w-full h-full opacity-30" preserveAspectRatio="none" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style={{stopColor:'rgb(16,185,129)', stopOpacity:0.8}} />
+                    <stop offset="100%" style={{stopColor:'rgb(59,130,246)', stopOpacity:0.8}} />
+                </linearGradient>
+                <filter id="glow">
+                    <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+                    <feMerge>
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                </filter>
+            </defs>
+            <path d="M0,1000 C300,900 400,700 200,500 S 600,100 1000,0" stroke="url(#grad1)" strokeWidth="2" fill="none" filter="url(#glow)" className="animate-[pulse_8s_ease-in-out_infinite]" />
+            <path d="M-100,1000 C200,800 500,600 800,400 S 1100,200 1400,0" stroke="rgba(59,130,246,0.5)" strokeWidth="1" fill="none" filter="url(#glow)" className="animate-[pulse_12s_ease-in-out_infinite_reverse]" />
+            <path d="M0,800 C400,800 600,600 800,200 S 1000,100 1200,0" stroke="rgba(16,185,129,0.3)" strokeWidth="1.5" fill="none" filter="url(#glow)" className="animate-[pulse_10s_ease-in-out_infinite]" />
+        </svg>
+        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-emerald-500/10 blur-[150px] rounded-full mix-blend-screen opacity-50"></div>
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-600/10 blur-[150px] rounded-full mix-blend-screen opacity-50"></div>
+        
+        {/* Racket Image Overlay - Positioned subtly */}
+        <div className="absolute -top-20 -right-20 opacity-20 rotate-12 transform scale-125 pointer-events-none">
+            <Image src="/hero-racket.png" alt="" width={800} height={800} className="object-contain drop-shadow-[0_0_50px_rgba(16,185,129,0.3)]" priority />
+        </div>
       </div>
 
       {/* Header */}

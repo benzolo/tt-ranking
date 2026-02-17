@@ -1,19 +1,27 @@
-import { getRankingsWithHistory, getLatestSnapshotDate } from '@/utils/ranking-snapshots'
+import { getRankingsWithHistory, getLatestSnapshotDate, getPublicSnapshotDates } from '@/utils/ranking-snapshots'
 import Link from 'next/link'
 import Image from 'next/image'
+import SnapshotSelector from '@/components/snapshot-selector'
 
 export default async function Home({
   searchParams,
 }: {
-  searchParams: { category?: string }
+  searchParams: Promise<{ category?: string; snapshot?: string }>
 }) {
-  const categoryData = await searchParams
-  const categoryValid = categoryData.category || 'Felnőtt'
+  const params = await searchParams
+  const categoryValid = params.category || 'Felnőtt'
+  const snapshotDate = params.snapshot
+  
   // Map UI category to Database category
   const categoryDb = categoryValid === 'Felnőtt' ? 'Senior' : categoryValid
 
-  const rankingsMale = await getRankingsWithHistory('Male', categoryDb)
-  const rankingsFemale = await getRankingsWithHistory('Female', categoryDb)
+  // Fetch available snapshot dates for selectors
+  const maleSnapshotDates = await getPublicSnapshotDates('Male', categoryDb)
+  const femaleSnapshotDates = await getPublicSnapshotDates('Female', categoryDb)
+
+  const rankingsMale = await getRankingsWithHistory('Male', categoryDb, snapshotDate)
+  const rankingsFemale = await getRankingsWithHistory('Female', categoryDb, snapshotDate)
+
   const lastUpdated = await getLatestSnapshotDate()
 
   const RankingTable = ({ title, data }: { title: string, data: any[] }) => (
@@ -210,8 +218,21 @@ export default async function Home({
 
         {/* Ranking Lists Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-            <RankingTable title="Férfi" data={rankingsMale} />
-            <RankingTable title="Női" data={rankingsFemale} />
+            {/* Male Column */}
+            <div className="bg-slate-900/50 backdrop-blur-md rounded-2xl border border-slate-800 overflow-hidden">
+              <div className="p-6 border-b border-slate-800 flex justify-end items-center flex-wrap gap-4">
+                <SnapshotSelector dates={maleSnapshotDates} />
+              </div>
+              <RankingTable title="Férfi" data={rankingsMale} />
+            </div>
+
+            {/* Female Column */}
+            <div className="bg-slate-900/50 backdrop-blur-md rounded-2xl border border-slate-800 overflow-hidden">
+              <div className="p-6 border-b border-slate-800 flex justify-end items-center flex-wrap gap-4">
+                <SnapshotSelector dates={femaleSnapshotDates} />
+              </div>
+              <RankingTable title="Női" data={rankingsFemale} />
+            </div>
         </div>
         
       </main>

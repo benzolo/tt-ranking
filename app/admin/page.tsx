@@ -1,6 +1,5 @@
 import { createClient } from '@/utils/supabase/server'
 import { getLatestSnapshotDate } from '@/utils/ranking-snapshots'
-import { createRankingSnapshot } from './rankings/actions'
 import { getUserRole } from '@/utils/supabase/roles'
 
 export default async function AdminDashboard() {
@@ -41,21 +40,21 @@ export default async function AdminDashboard() {
         <div className="bg-blue-50 border border-blue-100 rounded-lg p-6">
           <h3 className="text-lg font-semibold text-blue-800">Ranglista Pillanatkép</h3>
           <p className="text-sm text-blue-600 mt-1">
-            Pillanatkép készítése a jelenlegi ranglistáról a történeti visszakövetéshez.
+            Pillanatkép készítése és kezelése a történeti visszakövetéshez.
           </p>
           {latestSnapshotDate && (
             <p className="text-xs text-blue-500 mt-2">
               Utolsó pillanatkép: {new Date(latestSnapshotDate).toLocaleString('hu-HU')}
             </p>
           )}
-          <form action={createRankingSnapshot} className="mt-4">
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium"
+          <div className="mt-4">
+            <a
+              href="/admin/settings/snapshots"
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium"
             >
-              Pillanatkép Készítése
-            </button>
-          </form>
+              Pillanatképek Kezelése
+            </a>
+          </div>
         </div>
       )}
 

@@ -27,50 +27,105 @@ export interface RankingSnapshot {
  * Generate a new ranking snapshot
  * This captures the current state of rankings and stores them for historical comparison
  */
-export async function generateRankingSnapshot(): Promise<{ success: boolean; message: string; count?: number }> {
+
+export interface SnapshotMetadata {
+  id: string
+  snapshot_date: string
+  gender: string
+  age_category: string
+  is_public: boolean
+  description?: string
+  player_count?: number // Computed in query
+}
+
+/**
+ * Generate a new ranking snapshot
+ */
+export async function generateRankingSnapshot(genderRequest: string, categoryRequest: string): Promise<{ success: boolean; message: string; count?: number }> {
   const supabase = await createClient()
-  const snapshotDate = new Date().toISOString()
-
-  // Get current rankings
-  const rankings = await getRankingsForSnapshot()
-
-  if (rankings.length === 0) {
-    return { success: false, message: 'No rankings to snapshot' }
+  
+  // Handle Batch Generation
+  if (genderRequest === 'Both') {
+    await generateRankingSnapshot('Male', categoryRequest)
+    await generateRankingSnapshot('Female', categoryRequest)
+    return { success: true, message: 'Snapshots generation triggered for both genders' }
   }
 
-  // Prepare snapshot data
+  if (categoryRequest === 'All') {
+    const categories = ['Senior', 'U19', 'U15', 'U13', 'U11'] // TODO: Define these constants somewhere shared
+    for (const cat of categories) {
+      await generateRankingSnapshot(genderRequest, cat)
+    }
+    return { success: true, message: 'Snapshots generation triggered for all categories' }
+  }
+
+  // Generate specific snapshot
+  const snapshotDate = new Date().toISOString()
+  const rankings = await getRankingsForSnapshot(genderRequest, categoryRequest)
+
+  if (rankings.length === 0) {
+    // Even if empty, maybe we should record it? But for now let's skip.
+    return { success: false, message: `No rankings to snapshot for ${genderRequest} ${categoryRequest}` }
+  }
+
+  // 1. Create Metadata (Default Private)
+  const { data: metadata, error: metaError } = await supabase
+    .from('snapshot_metadata')
+    .insert({
+      snapshot_date: snapshotDate,
+      gender: genderRequest,
+      age_category: categoryRequest,
+      is_public: false, // Default private
+      description: `Auto-generated ${genderRequest} ${categoryRequest} ranking`
+    })
+    .select()
+    .single()
+
+  if (metaError || !metadata) {
+    console.error('Error creating snapshot metadata:', metaError)
+    return { success: false, message: 'Failed to create snapshot metadata' }
+  }
+
+  // 2. Prepare and Insert Snapshot Data
   const snapshotData = rankings.map((ranking, index) => ({
     player_id: ranking.playerId,
     rank_position: index + 1,
     total_points: ranking.totalPoints,
     events_count: ranking.eventsCount,
     snapshot_date: snapshotDate,
+    metadata_id: metadata.id
   }))
 
-  // Insert snapshots
   const { error } = await supabase.from('ranking_snapshots').insert(snapshotData)
 
   if (error) {
     console.error('Error creating snapshot:', error)
-    return { success: false, message: 'Failed to create snapshot' }
+    // Should probably delete metadata if this fails, but skipping for simplicity
+    return { success: false, message: 'Failed to create snapshot entries' }
   }
 
   return { 
     success: true, 
-    message: `Snapshot created successfully with ${rankings.length} players`,
+    message: `Snapshot created for ${genderRequest} ${categoryRequest} with ${rankings.length} players`,
     count: rankings.length 
   }
 }
 
 /**
- * Get the latest ranking snapshot date
+ * Get the latest PUBLIC ranking snapshot date
  */
-export async function getLatestSnapshotDate(): Promise<string | null> {
+export async function getLatestSnapshotDate(gender?: string, ageCategory?: string): Promise<string | null> {
   const supabase = await createClient()
 
-  const { data } = await supabase
-    .from('ranking_snapshots')
+  let query = supabase
+    .from('snapshot_metadata')
     .select('snapshot_date')
+    .eq('is_public', true)
+    
+  if (gender) query = query.eq('gender', gender)
+  if (ageCategory) query = query.eq('age_category', ageCategory)
+
+  const { data } = await query
     .order('snapshot_date', { ascending: false })
     .limit(1)
     .single()
@@ -79,36 +134,137 @@ export async function getLatestSnapshotDate(): Promise<string | null> {
 }
 
 /**
- * Get rankings with comparison to previous snapshot
+ * Get all available PUBLIC snapshot dates for selector
  */
-export async function getRankingsWithHistory(gender?: string, ageCategory?: string): Promise<RankingEntry[]> {
-  const currentRankings = await getRankingsForSnapshot(gender, ageCategory)
-  const latestSnapshotDate = await getLatestSnapshotDate()
+export async function getPublicSnapshotDates(gender?: string, ageCategory?: string): Promise<string[]> {
+  const supabase = await createClient()
 
-  if (!latestSnapshotDate) {
-    // No previous snapshot, mark all as new
-    return currentRankings.map((r, index) => ({
-      ...r,
-      rankPosition: index + 1,
-      rankChange: 'new' as const,
-    }))
+  let query = supabase
+    .from('snapshot_metadata')
+    .select('snapshot_date')
+    .eq('is_public', true)
+    
+  if (gender) query = query.eq('gender', gender)
+  if (ageCategory) query = query.eq('age_category', ageCategory)
+
+  const { data } = await query
+    .order('snapshot_date', { ascending: false })
+
+  return data?.map(d => d.snapshot_date) || []
+}
+
+/**
+ * Get rankings from a specific snapshot (or latest public if date not provided)
+ */
+export async function getRankingsWithHistory(gender?: string, ageCategory?: string, date?: string): Promise<RankingEntry[]> {
+  const supabase = await createClient()
+  let targetDate = date
+
+  if (!targetDate) {
+    targetDate = await getLatestSnapshotDate(gender, ageCategory) || undefined
   }
 
-  // Get previous snapshot
-  const supabase = await createClient()
-  const { data: previousSnapshots } = await supabase
+  if (!targetDate) {
+    // If no snapshot exists at all, return empty or live as fallback?
+    // Given the requirement to only show snapshots, returning empty is safer/more correct.
+    return []
+  }
+
+  // 1. Get snapshot data
+  // Logic: filtered by date, and if we have metadata, we can rely on that.
+  // But ranking_snapshots also has snapshot_date.
+  // We need to join players.
+  
+  // NOTE: If date is provided, we fetch items with that date. 
+  // We assume the snapshots were generated for this category/gender if we found the date via metadata query.
+  // However, snapshot_date alone might not be unique across categories if generated in batch efficiently 
+  // (though current logic uses `new Date()` per specific call, so likely unique timestamps).
+  // But safely, we should filter by metadata too? 
+  // Actually, `ranking_snapshots` stores `metadata_id`. 
+  // So getting data via `metadata_id` is safest if we knew it.
+  // But we passed `date`.
+  // Let's rely on date + metadata info from `snapshot_metadata` table.
+
+  // First, find the metadata record to get the ID (and confirm it matches gender/cat)
+  const { data: meta } = await supabase
+    .from('snapshot_metadata')
+    .select('id')
+    .eq('snapshot_date', targetDate)
+    .eq('gender', gender!) // Force filter by gender to ensure we get the right snapshot for this view
+    .eq('age_category', ageCategory!)
+    .single()
+
+  if (!meta) return []
+
+  const { data: latestData } = await supabase
     .from('ranking_snapshots')
-    .select('*')
-    .eq('snapshot_date', latestSnapshotDate)
+    .select(`
+      player_id,
+      total_points,
+      events_count,
+      player:players!inner (id, name, gender, club)
+    `)
+    .eq('metadata_id', meta.id)
 
-  const previousRankMap = new Map(
-    previousSnapshots?.map(s => [s.player_id, s.rank_position]) || []
-  )
+  if (!latestData) return []
 
-  // Compare and calculate changes
-  return currentRankings.map((ranking, index) => {
+  let currentEntries = latestData.map((s: any) => ({
+    playerId: s.player_id,
+    playerName: s.player.name,
+    club: s.player.club,
+    gender: s.player.gender,
+    totalPoints: s.total_points,
+    eventsCount: s.events_count,
+  }))
+
+  // Sort by points
+  currentEntries.sort((a, b) => b.totalPoints - a.totalPoints)
+
+  // 4. Get PREVIOUS snapshot for comparison (Specific to this gender/category)
+  const { data: headerData } = await supabase
+    .from('snapshot_metadata')
+    .select('snapshot_date')
+    .eq('gender', gender!)
+    .eq('age_category', ageCategory!)
+    .eq('is_public', true)
+    .lt('snapshot_date', targetDate) // Older than current
+    .order('snapshot_date', { ascending: false })
+    .limit(1)
+    .single()
+
+  let previousEntries: RankingEntry[] = []
+
+  if (headerData) {
+    const previousDate = headerData.snapshot_date
+    // Get previous metadata ID
+    const { data: prevMeta } = await supabase
+        .from('snapshot_metadata')
+        .select('id')
+        .eq('snapshot_date', previousDate)
+        .eq('gender', gender!)
+        .eq('age_category', ageCategory!)
+        .single()
+        
+    if (prevMeta) {
+        const { data: prevData } = await supabase
+        .from('ranking_snapshots')
+        .select(`player_id, rank_position`)
+        .eq('metadata_id', prevMeta.id)
+
+        if (prevData) {
+            previousEntries = prevData.map((e: any) => ({
+                playerId: e.player_id,
+                rankPosition: e.rank_position
+            })) as any
+        }
+    }
+  }
+
+  const previousRankMap = new Map(previousEntries.map(e => [e.playerId, e.rankPosition!]))
+
+  return currentEntries.map((entry, index) => {
     const currentRank = index + 1
-    const previousRank = previousRankMap.get(ranking.playerId)
+    const previousRank = previousRankMap.get(entry.playerId)
 
     let rankChange: 'up' | 'down' | 'same' | 'new' = 'new'
     let rankDifference = 0
@@ -126,7 +282,7 @@ export async function getRankingsWithHistory(gender?: string, ageCategory?: stri
     }
 
     return {
-      ...ranking,
+      ...entry,
       rankPosition: currentRank,
       previousRank,
       rankChange,
