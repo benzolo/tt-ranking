@@ -31,6 +31,7 @@ export default async function EventResultsPage({ params }: { params: Promise<{ i
   if (event.has_egyes) enabledCategories.push('Egyes')
   if (event.has_paros) enabledCategories.push('Páros')
   if (event.has_vegyes) enabledCategories.push('Vegyes')
+  if (event.has_csapat) enabledCategories.push('Csapat')
 
   return (
     <div className="space-y-8">
@@ -47,6 +48,7 @@ export default async function EventResultsPage({ params }: { params: Promise<{ i
               {event.has_egyes && <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-md text-xs font-medium">Egyes</span>}
               {event.has_paros && <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-md text-xs font-medium">Páros</span>}
               {event.has_vegyes && <span className="px-2 py-0.5 bg-purple-100 text-purple-800 rounded-md text-xs font-medium">Vegyes</span>}
+              {event.has_csapat && <span className="px-2 py-0.5 bg-orange-100 text-orange-800 rounded-md text-xs font-medium">Csapat</span>}
             </div>
          </div>
       </div>
@@ -102,7 +104,8 @@ export default async function EventResultsPage({ params }: { params: Promise<{ i
                     <span className={`px-2 py-1 rounded text-xs font-medium ${
                         result.category === 'Egyes' ? 'bg-emerald-100 text-emerald-800' : 
                         result.category === 'Páros' ? 'bg-blue-100 text-blue-800' : 
-                        'bg-purple-100 text-purple-800'
+                        result.category === 'Vegyes' ? 'bg-purple-100 text-purple-800' :
+                        'bg-orange-100 text-orange-800'
                     }`}>
                         {result.category}
                     </span>

@@ -15,7 +15,8 @@ const EventSchema = z.object({
   has_egyes: z.boolean().default(false),
   has_paros: z.boolean().default(false),
   has_vegyes: z.boolean().default(false),
-}).refine(data => data.has_egyes || data.has_paros || data.has_vegyes, {
+  has_csapat: z.boolean().default(false),
+}).refine(data => data.has_egyes || data.has_paros || data.has_vegyes || data.has_csapat, {
   message: "At least one category must be selected",
   path: ["has_egyes"] // Hooking it to one of them for error display
 })
@@ -33,6 +34,7 @@ export async function createEvent(prevState: any, formData: FormData) {
     has_egyes: formData.get('has_egyes') === 'true',
     has_paros: formData.get('has_paros') === 'true',
     has_vegyes: formData.get('has_vegyes') === 'true',
+    has_csapat: formData.get('has_csapat') === 'true',
   }
 
   const validatedFields = EventSchema.safeParse(rawData)
@@ -56,6 +58,7 @@ export async function createEvent(prevState: any, formData: FormData) {
     has_egyes,
     has_paros,
     has_vegyes,
+    has_csapat: validatedFields.data.has_csapat,
   })
 
   if (error) {
@@ -82,6 +85,7 @@ export async function updateEvent(id: string, prevState: any, formData: FormData
     has_egyes: formData.get('has_egyes') === 'true',
     has_paros: formData.get('has_paros') === 'true',
     has_vegyes: formData.get('has_vegyes') === 'true',
+    has_csapat: formData.get('has_csapat') === 'true',
   }
 
   const validatedFields = EventSchema.safeParse(rawData)
@@ -104,6 +108,7 @@ export async function updateEvent(id: string, prevState: any, formData: FormData
     has_egyes,
     has_paros,
     has_vegyes,
+    has_csapat: validatedFields.data.has_csapat,
   }).eq('id', id)
 
   if (error) {

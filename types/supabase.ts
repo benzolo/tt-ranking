@@ -19,6 +19,7 @@ export type Database = {
           age_category: string
           created_at: string | null
           date: string
+          has_csapat: boolean
           has_egyes: boolean
           has_paros: boolean
           has_vegyes: boolean
@@ -32,6 +33,7 @@ export type Database = {
           age_category: string
           created_at?: string | null
           date: string
+          has_csapat?: boolean
           has_egyes?: boolean
           has_paros?: boolean
           has_vegyes?: boolean
@@ -45,6 +47,7 @@ export type Database = {
           age_category?: string
           created_at?: string | null
           date?: string
+          has_csapat?: boolean
           has_egyes?: boolean
           has_paros?: boolean
           has_vegyes?: boolean

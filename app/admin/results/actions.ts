@@ -9,7 +9,7 @@ import { ALLOWED_POSITIONS } from '@/utils/constants'
 
 const ResultSchema = z.object({
   player_id: z.string().uuid("Invalid Player ID"),
-  category: z.enum(["Egyes", "Páros", "Vegyes"]),
+  category: z.enum(["Egyes", "Páros", "Vegyes", "Csapat"]),
   position: z.enum(ALLOWED_POSITIONS),
   points: z.number().min(0, "Points must be positive").optional(),
 })
@@ -19,7 +19,7 @@ export async function addResult(eventId: string, prevState: any, formData: FormD
   const supabase = await createClient()
   
   const playerId = formData.get('player_id') as string
-  const category = formData.get('category') as "Egyes" | "Páros" | "Vegyes"
+  const category = formData.get('category') as "Egyes" | "Páros" | "Vegyes" | "Csapat"
   const position = formData.get('position') as string
   const manualPoints = formData.get('points') ? parseInt(formData.get('points') as string) : undefined
 
@@ -41,7 +41,7 @@ export async function addResult(eventId: string, prevState: any, formData: FormD
   // 2. Fetch Event details to determine points if not manual
   let initialPoints = manualPoints ?? 0;
 
-  if (manualPoints === undefined) {
+  if (manualPoints === undefined && category !== 'Csapat') {
       const { data: event } = await supabase.from('events').select('*').eq('id', eventId).single();
       
       if (event) {
@@ -107,6 +107,10 @@ export async function recalculateEventPoints(eventId: string) {
 
   // 3. For each result, lookup points from point table
   for (const result of results) {
+    if (result.category === 'Csapat') {
+        continue; // Skip manual points results
+    }
+
     // For Vegyes, we'll try to use Páros points if Vegyes points aren't defined.
     const lookupCategory = result.category === 'Vegyes' ? 'Páros' : result.category;
 

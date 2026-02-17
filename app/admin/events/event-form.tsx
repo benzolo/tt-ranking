@@ -140,8 +140,18 @@ export default function EventForm({ event }: { event?: any }) {
               />
               <span className="text-sm text-slate-700 font-medium">Vegyes</span>
             </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input 
+                type="checkbox" 
+                name="has_csapat" 
+                value="true"
+                defaultChecked={event?.has_csapat}
+                className="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500"
+              />
+              <span className="text-sm text-slate-700 font-medium">Csapat</span>
+            </label>
           </div>
-          {(state?.errors?.has_egyes || state?.errors?.has_paros || state?.errors?.has_vegyes) && (
+          {(state?.errors?.has_egyes || state?.errors?.has_paros || state?.errors?.has_vegyes || state?.errors?.has_csapat) && (
             <p className="text-red-500 text-xs mt-1">Válassz legalább egy kategóriát.</p>
           )}
         </div>
