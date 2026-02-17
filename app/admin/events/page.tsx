@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
-import { deleteEvent } from './actions'
+import { deleteEvent, checkEventResults } from './actions'
+import DeleteWithConfirmation from '@/components/DeleteWithConfirmation'
 
 export default async function EventsPage() {
   const supabase = await createClient()
@@ -51,11 +52,12 @@ export default async function EventsPage() {
                   <Link href={`/admin/events/${event.id}`} className="text-emerald-600 hover:text-emerald-900 mr-4">
                     Szerkesztés
                   </Link>
-                  <form action={deleteEvent.bind(null, event.id)} className="inline">
-                    <button type="submit" className="text-red-600 hover:text-red-900">
-                      Törlés
-                    </button>
-                  </form>
+                  <DeleteWithConfirmation 
+                    id={event.id} 
+                    entityName="verseny" 
+                    checkAction={checkEventResults} 
+                    deleteAction={deleteEvent} 
+                  />
                 </td>
               </tr>
             ))}

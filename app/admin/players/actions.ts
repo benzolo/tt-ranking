@@ -124,3 +124,20 @@ export async function deletePlayer(id: string) {
 
   revalidatePath('/admin/players')
 }
+
+export async function checkPlayerResults(id: string) {
+  await requireRole(['admin', 'superadmin'])
+  const supabase = await createClient()
+  
+  const { count, error } = await supabase
+    .from('results')
+    .select('*', { count: 'exact', head: true })
+    .eq('player_id', id)
+
+  if (error) {
+    console.error('Error checking player results:', error)
+    return { count: 0 }
+  }
+
+  return { count: count || 0 }
+}

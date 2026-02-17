@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
-import { deletePlayer } from './actions'
+import { deletePlayer, checkPlayerResults } from './actions'
+import DeleteWithConfirmation from '@/components/DeleteWithConfirmation'
 
 export default async function PlayersPage({
   searchParams,
@@ -77,11 +78,12 @@ export default async function PlayersPage({
                   <Link href={`/admin/players/${player.id}`} className="text-emerald-600 hover:text-emerald-900 mr-4">
                     Szerkesztés
                   </Link>
-                  <form action={deletePlayer.bind(null, player.id)} className="inline">
-                    <button type="submit" className="text-red-600 hover:text-red-900">
-                      Törlés
-                    </button>
-                  </form>
+                  <DeleteWithConfirmation 
+                    id={player.id} 
+                    entityName="játékos" 
+                    checkAction={checkPlayerResults} 
+                    deleteAction={deletePlayer} 
+                  />
                 </td>
               </tr>
             ))}

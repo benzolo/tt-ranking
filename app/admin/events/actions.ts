@@ -133,3 +133,20 @@ export async function deleteEvent(id: string) {
 
   revalidatePath('/admin/events')
 }
+
+export async function checkEventResults(id: string) {
+  await requireRole(['superadmin'])
+  const supabase = await createClient()
+  
+  const { count, error } = await supabase
+    .from('results')
+    .select('*', { count: 'exact', head: true })
+    .eq('event_id', id)
+
+  if (error) {
+    console.error('Error checking event results:', error)
+    return { count: 0 }
+  }
+
+  return { count: count || 0 }
+}
