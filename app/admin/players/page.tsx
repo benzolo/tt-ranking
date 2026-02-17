@@ -6,11 +6,12 @@ import DeleteWithConfirmation from '@/components/DeleteWithConfirmation'
 export default async function PlayersPage({
   searchParams,
 }: {
-  searchParams: { search?: string; page?: string }
+  searchParams: Promise<{ search?: string; page?: string }>
 }) {
   const supabase = await createClient()
-  const search = searchParams.search || ''
-  const page = Number(searchParams.page) || 1
+  const { search: searchParam, page: pageParam } = await searchParams
+  const search = searchParam || ''
+  const page = Number(pageParam) || 1
   const ITEMS_PER_PAGE = 30
   const from = (page - 1) * ITEMS_PER_PAGE
   const to = from + ITEMS_PER_PAGE - 1
