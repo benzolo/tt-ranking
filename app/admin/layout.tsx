@@ -15,22 +15,22 @@ export default async function AdminLayout({
       {/* Sidebar */}
       <aside className="w-64 bg-slate-900 text-white flex-shrink-0 flex flex-col">
         <div className="p-6">
-          <h1 className="text-2xl font-bold tracking-tight text-emerald-400">TT Ranking</h1>
-          <p className="text-xs text-slate-400 mt-1">Admin Dashboard ({role})</p>
+          <h1 className="text-2xl font-bold tracking-tight text-emerald-400">Asztalitenisz<br/>Ranglista</h1>
+          <p className="text-xs text-slate-400 mt-1">Adminisztrációs Pult ({role})</p>
         </div>
         
         <nav className="mt-6 px-4 space-y-2 flex-1">
           <Link href="/admin" className="block px-4 py-2.5 rounded-lg hover:bg-slate-800 transition-colors text-slate-300 hover:text-white">
-            Dashboard
+            Vezérlőpult
           </Link>
           
           {(role === 'admin' || role === 'superadmin') && (
             <>
               <Link href="/admin/players" className="block px-4 py-2.5 rounded-lg hover:bg-slate-800 transition-colors text-slate-300 hover:text-white">
-                Players
+                Játékosok
               </Link>
               <Link href="/admin/results" className="block px-4 py-2.5 rounded-lg hover:bg-slate-800 transition-colors text-slate-300 hover:text-white">
-                Results Entry
+                Eredmények Rögzítése
               </Link>
             </>
           )}
@@ -38,10 +38,10 @@ export default async function AdminLayout({
           {role === 'superadmin' && (
             <>
               <Link href="/admin/events" className="block px-4 py-2.5 rounded-lg hover:bg-slate-800 transition-colors text-slate-300 hover:text-white">
-                Events
+                Versenyek
               </Link>
               <Link href="/admin/settings" className="block px-4 py-2.5 rounded-lg hover:bg-slate-800 transition-colors text-slate-300 hover:text-white">
-                Point Settings
+                Pont Beállítások
               </Link>
             </>
           )}
@@ -49,7 +49,7 @@ export default async function AdminLayout({
 
         <div className="p-6">
            <Link href="/" className="block px-4 py-2 text-sm text-slate-400 hover:text-white transition-colors">
-            &larr; Back to Public Site
+            &larr; Vissza a Publikus Oldalra
           </Link>
         </div>
       </aside>

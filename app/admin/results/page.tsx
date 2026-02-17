@@ -16,8 +16,8 @@ export default async function ResultsEventsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">Results Entry</h1>
-      <p className="text-slate-500 mb-8">Select an event to manage its player results.</p>
+      <h1 className="text-2xl font-bold text-slate-900 mb-6">Eredmények Rögzítése</h1>
+      <p className="text-slate-500 mb-8">Válassz egy versenyt az eredmények kezeléséhez.</p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {events?.map((event) => (
@@ -48,14 +48,14 @@ export default async function ResultsEventsPage() {
                     {/* @ts-ignore - Supabase types join count is tricky */}
                    {event.results?.[0]?.count || 0}
                 </span>
-                <span className="text-xs text-slate-500">Results</span>
+                <span className="text-xs text-slate-500">Eredmények</span>
               </div>
             </div>
           </Link>
         ))}
         {events?.length === 0 && (
             <div className="col-span-full text-center py-12 text-slate-500">
-                No events found. Go to Events to create one first.
+                Nincsenek versenyek. Hozz létre egyet a kezdéshez.
             </div>
         )}
       </div>

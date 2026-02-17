@@ -32,7 +32,7 @@ export default async function EventResultsPage({ params }: { params: Promise<{ i
   return (
     <div className="space-y-8">
       <div>
-         <h1 className="text-2xl font-bold text-slate-900">{event.name} Results</h1>
+         <h1 className="text-2xl font-bold text-slate-900">{event.name} Eredmények</h1>
          <div className="text-slate-500 mt-1 flex gap-4 text-sm">
             <span>{new Date(event.date).toLocaleDateString()}</span>
             <span>•</span>
@@ -53,8 +53,8 @@ export default async function EventResultsPage({ params }: { params: Promise<{ i
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
             <div>
-              <h3 className="font-medium text-slate-900">Current Standings</h3>
-              <span className="text-xs text-slate-500">{results?.length} entries</span>
+              <h3 className="font-medium text-slate-900">Jelenlegi Állás</h3>
+              <span className="text-xs text-slate-500">{results?.length} nevezés</span>
             </div>
             <form action={async () => {
               'use server';
@@ -65,7 +65,7 @@ export default async function EventResultsPage({ params }: { params: Promise<{ i
                 className="px-3 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-md transition-colors"
                 title="Recalculate all points based on current point table rules"
               >
-                Recalculate Points
+                Pontok Újraszámítása
               </button>
             </form>
         </div>
@@ -73,13 +73,13 @@ export default async function EventResultsPage({ params }: { params: Promise<{ i
         <table className="min-w-full divide-y divide-slate-200">
           <thead className="bg-white">
             <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider w-20">Pos</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Player</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Club</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Category</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Points</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider w-20">Helyezés</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Játékos</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Egyesület</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Kategória</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Pont</th>
               <th scope="col" className="relative px-6 py-3">
-                <span className="sr-only">Actions</span>
+                <span className="sr-only">Műveletek</span>
               </th>
             </tr>
           </thead>
@@ -110,7 +110,7 @@ export default async function EventResultsPage({ params }: { params: Promise<{ i
                       'use server';
                       await deleteResult(id, result.id);
                   }}>
-                    <button type="submit" className="text-slate-400 hover:text-red-600 transition-colors" title="Remove Result">
+                    <button type="submit" className="text-slate-400 hover:text-red-600 transition-colors" title="Eredmény Eltávolítása">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
                       </svg>
@@ -122,7 +122,7 @@ export default async function EventResultsPage({ params }: { params: Promise<{ i
             {results?.length === 0 && (
                 <tr>
                     <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
-                        No results recorded yet. Use the form above to add players.
+                        Még nincsenek rögzített eredmények. Használd a fenti űrlapot játékosok hozzáadásához.
                     </td>
                 </tr>
             )}

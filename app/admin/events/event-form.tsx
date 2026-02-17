@@ -13,7 +13,7 @@ function SubmitButton() {
       disabled={pending}
       className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-6 rounded-lg transition-colors disabled:opacity-50"
     >
-      {pending ? 'Saving...' : 'Save Event'}
+      {pending ? 'Mentés...' : 'Verseny Mentése'}
     </button>
   )
 }
@@ -31,7 +31,7 @@ export default function EventForm({ event }: { event?: any }) {
   return (
     <form action={formAction} className="space-y-6 max-w-2xl bg-white p-8 rounded-xl shadow-sm border border-slate-200">
       <div>
-        <label htmlFor="name" className="block text-sm font-medium text-slate-700">Event Name</label>
+        <label htmlFor="name" className="block text-sm font-medium text-slate-700">Verseny Neve</label>
         <input 
           type="text" 
           name="name" 
@@ -44,7 +44,7 @@ export default function EventForm({ event }: { event?: any }) {
       </div>
 
       <div>
-        <label htmlFor="type" className="block text-sm font-medium text-slate-700">Event Type</label>
+        <label htmlFor="type" className="block text-sm font-medium text-slate-700">Verseny Típusa</label>
         <select 
           name="type" 
           id="type" 
@@ -62,7 +62,7 @@ export default function EventForm({ event }: { event?: any }) {
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label htmlFor="date" className="block text-sm font-medium text-slate-700">Date</label>
+          <label htmlFor="date" className="block text-sm font-medium text-slate-700">Dátum</label>
           <input 
             type="date" 
             name="date" 
@@ -75,7 +75,7 @@ export default function EventForm({ event }: { event?: any }) {
         </div>
 
         <div>
-           <label htmlFor="validity_date" className="block text-sm font-medium text-slate-700">Validity Date</label>
+           <label htmlFor="validity_date" className="block text-sm font-medium text-slate-700">Érvényességi Dátum</label>
           <input 
             type="date" 
             name="validity_date" 
@@ -84,14 +84,14 @@ export default function EventForm({ event }: { event?: any }) {
             required
             className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-2 border"
           />
-          <p className="text-xs text-slate-500 mt-1">Usually 52 weeks after event date.</p>
+          <p className="text-xs text-slate-500 mt-1">Általában 52 héttel a verseny után.</p>
            {state?.errors?.validity_date && <p className="text-red-500 text-xs mt-1">{state.errors.validity_date[0]}</p>}
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-           <label htmlFor="age_category" className="block text-sm font-medium text-slate-700">Age Category</label>
+           <label htmlFor="age_category" className="block text-sm font-medium text-slate-700">Korosztály</label>
             <select 
             name="age_category" 
             id="age_category" 
@@ -108,7 +108,7 @@ export default function EventForm({ event }: { event?: any }) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">Categories</label>
+          <label className="block text-sm font-medium text-slate-700 mb-2">Kategóriák</label>
           <div className="flex flex-wrap gap-6 items-center bg-slate-50 p-3 rounded-lg border border-slate-200">
             <label className="flex items-center gap-2 cursor-pointer">
               <input 
@@ -142,7 +142,7 @@ export default function EventForm({ event }: { event?: any }) {
             </label>
           </div>
           {(state?.errors?.has_egyes || state?.errors?.has_paros || state?.errors?.has_vegyes) && (
-            <p className="text-red-500 text-xs mt-1">Please select at least one category.</p>
+            <p className="text-red-500 text-xs mt-1">Válassz legalább egy kategóriát.</p>
           )}
         </div>
       </div>

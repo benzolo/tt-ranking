@@ -13,7 +13,7 @@ function SubmitButton() {
       disabled={pending}
       className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-6 rounded-lg transition-colors disabled:opacity-50"
     >
-      {pending ? 'Saving...' : 'Save Player'}
+      {pending ? 'Mentés...' : 'Játékos Mentése'}
     </button>
   )
 }
@@ -31,7 +31,7 @@ export default function PlayerForm({ player }: { player?: any }) {
   return (
     <form action={formAction} className="space-y-6 max-w-2xl bg-white p-8 rounded-xl shadow-sm border border-slate-200">
       <div>
-        <label htmlFor="name" className="block text-sm font-medium text-slate-700">Full Name</label>
+        <label htmlFor="name" className="block text-sm font-medium text-slate-700">Teljes Név</label>
         <input 
           type="text" 
           name="name" 
@@ -44,34 +44,35 @@ export default function PlayerForm({ player }: { player?: any }) {
       </div>
 
       <div>
-        <label htmlFor="license_id" className="block text-sm font-medium text-slate-700">License ID (Optional)</label>
+        <label htmlFor="license_id" className="block text-sm font-medium text-slate-700">Engedélyszám</label>
         <input 
           type="text" 
           name="license_id" 
           id="license_id" 
           defaultValue={player?.license_id || ''}
-          placeholder="e.g., 12345"
+          placeholder="pl., 12345"
+          required
           className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-2 border"
         />
         {state?.errors?.license_id && <p className="text-red-500 text-xs mt-1">{state.errors.license_id[0]}</p>}
       </div>
 
       <div>
-        <label htmlFor="gender" className="block text-sm font-medium text-slate-700">Gender</label>
+        <label htmlFor="gender" className="block text-sm font-medium text-slate-700">Nem</label>
         <select 
           name="gender" 
           id="gender" 
           defaultValue={player?.gender || 'Male'}
           className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-2 border"
         >
-          <option value="Male">Male</option>
-          <option value="Female">Female</option>
+          <option value="Male">Férfi</option>
+          <option value="Female">Nő</option>
         </select>
          {state?.errors?.gender && <p className="text-red-500 text-xs mt-1">{state.errors.gender[0]}</p>}
       </div>
 
       <div>
-        <label htmlFor="club" className="block text-sm font-medium text-slate-700">Club (Optional)</label>
+        <label htmlFor="club" className="block text-sm font-medium text-slate-700">Egyesület (Opcionális)</label>
         <input 
           type="text" 
           name="club" 
@@ -83,7 +84,7 @@ export default function PlayerForm({ player }: { player?: any }) {
       </div>
 
       <div>
-        <label htmlFor="birth_date" className="block text-sm font-medium text-slate-700">Date of Birth (Optional)</label>
+        <label htmlFor="birth_date" className="block text-sm font-medium text-slate-700">Születési Dátum (Opcionális)</label>
         <input 
           type="date" 
           name="birth_date" 

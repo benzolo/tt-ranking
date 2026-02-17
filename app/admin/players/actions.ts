@@ -8,7 +8,7 @@ import { requireRole } from '@/utils/supabase/roles'
 
 const PlayerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
-  license_id: z.string().optional(),
+  license_id: z.string().min(1, "License ID is required"),
   gender: z.enum(["Male", "Female"]),
   club: z.string().optional(),
   birth_date: z.string().optional().or(z.literal('')),
@@ -46,6 +46,14 @@ export async function createPlayer(prevState: any, formData: FormData) {
   })
 
   if (error) {
+    if (error.code === '23505') {
+      return {
+        message: 'This License ID is already in use.',
+        errors: {
+          license_id: ['License ID must be unique']
+        }
+      }
+    }
     return {
       message: 'Database Error: Failed to Create Player.',
     }
@@ -87,6 +95,14 @@ export async function updatePlayer(id: string, prevState: any, formData: FormDat
   }).eq('id', id)
 
   if (error) {
+    if (error.code === '23505') {
+      return {
+        message: 'This License ID is already in use.',
+        errors: {
+          license_id: ['License ID must be unique']
+        }
+      }
+    }
     return {
       message: 'Database Error: Failed to Update Player.',
     }

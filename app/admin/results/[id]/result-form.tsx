@@ -14,7 +14,7 @@ function SubmitButton() {
       disabled={pending}
       className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-6 rounded-lg transition-colors disabled:opacity-50"
     >
-      {pending ? 'Adding...' : 'Add Result'}
+      {pending ? 'Mentés...' : 'Eredmény Hozzáadása'}
     </button>
   )
 }
@@ -35,28 +35,28 @@ export default function ResultForm({ eventId, players, enabledCategories }: {
       ref={formRef}
       className="space-y-4 bg-slate-50 p-6 rounded-xl border border-slate-200"
     >
-      <h3 className="text-lg font-medium text-slate-900">Add Player Result</h3>
+      <h3 className="text-lg font-medium text-slate-900">Játékos Eredmény Rögzítése</h3>
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div>
-          <label htmlFor="player_id" className="block text-sm font-medium text-slate-700">Player</label>
+          <label htmlFor="player_id" className="block text-sm font-medium text-slate-700">Játékos</label>
           <select 
             name="player_id" 
             id="player_id" 
             required
             className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-2 border"
           >
-            <option value="">Select a player...</option>
+            <option value="">Válassz játékost...</option>
             {players.map((player) => (
               <option key={player.id} value={player.id}>
-                {player.name} ({player.club || 'No Club'})
+                {player.name} ({player.license_id ? `${player.license_id}, ` : ''}{player.club || 'Nincs egyesület'})
               </option>
             ))}
           </select>
         </div>
 
         <div>
-          <label htmlFor="category" className="block text-sm font-medium text-slate-700">Category</label>
+          <label htmlFor="category" className="block text-sm font-medium text-slate-700">Kategória</label>
           <select 
             name="category" 
             id="category" 
@@ -70,7 +70,7 @@ export default function ResultForm({ eventId, players, enabledCategories }: {
         </div>
 
         <div>
-          <label htmlFor="position" className="block text-sm font-medium text-slate-700">Position</label>
+          <label htmlFor="position" className="block text-sm font-medium text-slate-700">Helyezés</label>
           <input 
             type="number" 
             name="position" 
@@ -82,14 +82,14 @@ export default function ResultForm({ eventId, players, enabledCategories }: {
         </div>
 
         <div>
-           <label htmlFor="points" className="block text-sm font-medium text-slate-700">Points (Optional)</label>
+           <label htmlFor="points" className="block text-sm font-medium text-slate-700">Pont (Opcionális)</label>
           <input 
             type="number" 
             name="points" 
             id="points" 
             min="0"
             className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-2 border"
-            placeholder="Auto-calculated"
+            placeholder="Automatikusan számolva"
           />
         </div>
       </div>
