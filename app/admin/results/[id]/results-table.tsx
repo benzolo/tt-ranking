@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { deleteResult } from '../actions'
 
 type Player = {
@@ -32,6 +32,10 @@ export default function ResultsTable({
 }) {
     const [results, setResults] = useState<Result[]>(initialResults)
     const [filterPlayer, setFilterPlayer] = useState('')
+
+    useEffect(() => {
+        setResults(initialResults)
+    }, [initialResults])
     const [sortConfig, setSortConfig] = useState<SortConfig | null>(null)
 
     const handleSort = (key: string) => {
