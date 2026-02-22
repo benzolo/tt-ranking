@@ -155,18 +155,14 @@ export default async function Home({
       <header className="relative border-b border-slate-800/50 bg-slate-900/30 backdrop-blur-xl sticky top-0 z-50 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.4)] border border-emerald-400/30">
-                <svg viewBox="0 0 24 24" className="w-7 h-7 text-white fill-current drop-shadow-md" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
-                    <circle cx="12" cy="12" r="4" />
-                </svg>
-            </div>
-            <div>
-              <h1 className="text-3xl font-black bg-gradient-to-r from-white via-slate-200 to-emerald-200 bg-clip-text text-transparent italic tracking-tighter uppercase leading-[0.85] drop-shadow-sm">
-                Asztalitenisz<br/>
-                <span className="text-emerald-400 text-lg not-italic tracking-widest font-bold">Ranglista</span>
-              </h1>
-            </div>
+            <Image 
+                src="/moatsz_logo.png" 
+                alt="MOATSZ Logo" 
+                width={380} 
+                height={189} 
+                className="object-contain"
+                priority
+            />
           </div>
           <Link href="/login" className="text-xs font-black text-emerald-400 hover:text-white transition-all border border-emerald-500/30 bg-emerald-500/10 px-6 py-2.5 rounded-xl hover:bg-emerald-500 hover:border-emerald-500 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] tracking-wider">
             ADMIN BELÉPÉS
@@ -197,7 +193,7 @@ export default async function Home({
                         defaultValue={categoryValid}
                         className="appearance-none bg-slate-800 border border-slate-600 text-slate-100 font-bold rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 pr-10 pl-5 py-3 outline-none cursor-pointer hover:bg-slate-700 transition-colors shadow-inner min-w-[160px]"
                     >
-                        <option value="Felnőtt">Felnőtt (Senior)</option>
+                        <option value="Felnőtt">Felnőtt</option>
                         <option value="U19">U19</option>
                         <option value="U15">U15</option>
                         <option value="U13">U13</option>
@@ -253,7 +249,7 @@ export default async function Home({
             </div>
             <div className="flex flex-wrap justify-center gap-8 bg-slate-900/50 px-8 py-4 rounded-2xl border border-slate-800/50">
                 <a href="#" className="text-[11px] font-bold text-slate-400 hover:text-emerald-400 transition-colors uppercase tracking-widest hover:underline decoration-emerald-500/50 underline-offset-4">Adatvédelmi tájékoztató</a>
-                <a href="https://moatsz.hu" target="_blank" rel="noopener noreferrer" className="text-[11px] font-bold text-slate-400 hover:text-blue-400 transition-colors uppercase tracking-widest flex items-center gap-2 hover:underline decoration-blue-500/50 underline-offset-4">
+                <a href="https://asztaliteniszezz.hu" target="_blank" rel="noopener noreferrer" className="text-[11px] font-bold text-slate-400 hover:text-blue-400 transition-colors uppercase tracking-widest flex items-center gap-2 hover:underline decoration-blue-500/50 underline-offset-4">
                     Magyar Asztalitenisz Szövetség
                     <svg viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3">
                         <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />

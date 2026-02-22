@@ -106,10 +106,11 @@ function FilterForm({ defaultAge, defaultType }: { defaultAge: string, defaultTy
                     className="block w-full rounded-lg border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm px-3 py-2 border"
                 >
                     <option value="">Összes</option>
-                    <option value="Kiemelt">Kiemelt</option>
-                    <option value="Országos">Országos</option>
+                    <option value="OB">OB</option>
+                    <option value="I. osztály">I. osztály</option>
                     <option value="II. osztály">II. osztály</option>
-                    <option value="Regionális">Regionális</option>
+                    <option value="TOP">TOP</option>
+                    <option value="Megye">Megye</option>
                 </select>
             </div>
             <div className="flex gap-2">

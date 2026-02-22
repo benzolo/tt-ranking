@@ -160,8 +160,8 @@ export default function ResultForm({ eventId, players, enabledCategories }: {
                         <input type="text" name="name" required className="w-full rounded-lg border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-2.5 border" />
                      </div>
                      <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Licensz ID</label>
-                        <input type="text" name="license_id" className="w-full rounded-lg border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-2.5 border" />
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Licensz ID *</label>
+                        <input type="text" name="license_id" required className="w-full rounded-lg border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-2.5 border" />
                      </div>
                      <div className="grid grid-cols-2 gap-4">
                         <div>

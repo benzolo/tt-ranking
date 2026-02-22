@@ -149,6 +149,10 @@ export async function addQuickPlayer(formData: FormData) {
     return { error: 'A Név megadása kötelező.' }
   }
 
+  if (!license_id || typeof license_id !== 'string' || license_id.trim() === '') {
+    return { error: 'A Licensz ID megadása kötelező.' }
+  }
+
   if (!gender || (gender !== 'Male' && gender !== 'Female')) {
     return { error: 'Érvénytelen nem.' }
   }
