@@ -107,7 +107,7 @@ export default function ResultsTable({
         }
 
         return items;
-    }, [results, filterPlayer, sortConfig]);
+    }, [results, filterPlayer, filterGender, filterCategory, sortConfig]);
 
     const handleDelete = async (resultId: string) => {
         if (confirm('Biztosan törölni szeretnéd ezt az eredményt?')) {
