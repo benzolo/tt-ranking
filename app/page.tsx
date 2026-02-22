@@ -87,9 +87,16 @@ export default async function Home({
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      <Link href={`/player/${player.playerId}`} className="font-bold text-white group-hover:text-emerald-400 transition-colors text-sm">
-                        {player.playerName}
-                      </Link>
+                      <div className="flex items-center gap-2">
+                        <Link href={`/player/${player.playerId}`} className="font-bold text-white group-hover:text-emerald-400 transition-colors text-sm">
+                          {player.playerName}
+                        </Link>
+                        {categoryValid !== 'Felnőtt' && player.birthDate && (
+                            <span title="Jelenlegi hivatalos korosztály" className="px-1.5 py-0.5 rounded-full bg-slate-800 text-slate-400 text-[10px] font-bold border border-slate-700 select-none">
+                                U{new Date().getFullYear() - new Date(player.birthDate).getFullYear()}
+                            </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-slate-400 font-medium text-xs">
                       {player.club || '-'}

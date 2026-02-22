@@ -11,6 +11,7 @@ export interface RankingEntry {
   previousRank?: number
   rankChange?: 'up' | 'down' | 'same' | 'new'
   rankDifference?: number
+  birthDate?: string | null
 }
 
 export interface RankingSnapshot {
@@ -202,7 +203,7 @@ export async function getRankingsWithHistory(gender?: string, ageCategory?: stri
       player_id,
       total_points,
       events_count,
-      player:players!inner (id, name, gender, club)
+      player:players!inner (id, name, gender, club, birth_date)
     `)
     .eq('metadata_id', meta.id)
 
@@ -213,6 +214,7 @@ export async function getRankingsWithHistory(gender?: string, ageCategory?: stri
     playerName: s.player.name,
     club: s.player.club,
     gender: s.player.gender,
+    birthDate: s.player.birth_date,
     totalPoints: s.total_points,
     eventsCount: s.events_count,
   }))
@@ -329,13 +331,31 @@ async function getRankingsForSnapshot(gender?: string, ageCategory?: string): Pr
     return []
   }
 
-  // 2. Group by player
+  // 2. Parse max age from category (e.g., 'U15' -> 15)
+  const isUCategory = ageCategory && ageCategory !== 'Senior' && ageCategory.startsWith('U');
+  const maxAllowedAge = isUCategory ? parseInt(ageCategory.replace('U', ''), 10) : null;
+  const currentYear = new Date().getFullYear();
+
+  // 3. Group by player
   const playerGroups = new Map<string, any[]>()
   data.forEach((r: any) => {
     // Filter by gender if provided
     if (gender && r.player.gender !== gender) return
-    // Filter by age category if provided
+    // Filter by age category from the EVENT constraints
     if (ageCategory && r.event.age_category !== ageCategory) return
+
+    // Apply ranking generation age limits
+    if (isUCategory && maxAllowedAge !== null) {
+        if (r.player.birth_date) {
+            const birthYear = new Date(r.player.birth_date).getFullYear()
+            const playerAge = currentYear - birthYear;
+            // E.g. for U15, if age is 16, they should NOT be included in this specific list
+            if (playerAge > maxAllowedAge) {
+                return; // Skip this player's result for THIS ranking
+            }
+        }
+        // If birth_date is missing, the user requested to INCUDE them by default
+    }
 
     if (!playerGroups.has(r.player.id)) {
       playerGroups.set(r.player.id, [])
@@ -343,7 +363,7 @@ async function getRankingsForSnapshot(gender?: string, ageCategory?: string): Pr
     playerGroups.get(r.player.id)?.push(r)
   })
 
-  // 3. Process each player's results
+  // 4. Process each player's results
   const rankingEntries: RankingEntry[] = []
 
   playerGroups.forEach((results, playerId) => {

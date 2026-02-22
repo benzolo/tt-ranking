@@ -108,6 +108,23 @@ export default function EventForm({ event }: { event?: any }) {
         </div>
 
         <div>
+           <label htmlFor="gender" className="block text-sm font-medium text-slate-700">Nem</label>
+            <select 
+            name="gender" 
+            id="gender" 
+            defaultValue={event?.gender || 'Both'}
+            className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-2 border"
+            >
+            <option value="Both">Mindkét Nem</option>
+            <option value="Male">Férfi</option>
+            <option value="Female">Női</option>
+            </select>
+             {state?.errors?.gender && <p className="text-red-500 text-xs mt-1">{state.errors.gender[0]}</p>}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4">
+        <div>
           <label className="block text-sm font-medium text-slate-700 mb-2">Kategóriák</label>
           <div className="flex flex-wrap gap-6 items-center bg-slate-50 p-3 rounded-lg border border-slate-200">
             <label className="flex items-center gap-2 cursor-pointer">

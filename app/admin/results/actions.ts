@@ -134,3 +134,42 @@ export async function recalculateEventPoints(eventId: string) {
   revalidatePath(`/admin/results/${eventId}`)
   return { message: 'Points recalculated successfully' }
 }
+
+export async function addQuickPlayer(formData: FormData) {
+  await requireRole(['admin', 'superadmin'])
+  const supabase = await createClient()
+
+  const name = formData.get('name') as string
+  const license_id = formData.get('license_id') as string | null
+  const gender = formData.get('gender') as 'Male' | 'Female'
+  const club = formData.get('club') as string | null
+  const birth_dateParam = formData.get('birth_date') as string | null
+
+  if (!name || typeof name !== 'string' || name.trim() === '') {
+    return { error: 'A Név megadása kötelező.' }
+  }
+
+  if (!gender || (gender !== 'Male' && gender !== 'Female')) {
+    return { error: 'Érvénytelen nem.' }
+  }
+  
+  const birth_date = birth_dateParam ? new Date(birth_dateParam).toISOString() : null
+
+  const { error } = await supabase.from('players').insert({
+    name: name.trim(),
+    license_id: license_id ? license_id.trim() : null,
+    gender,
+    club: club ? club.trim() : null,
+    birth_date
+  })
+
+  if (error) {
+    console.error('Error inserting quick player:', error)
+    if (error.code === '23505' && error.message.includes('license_id')) {
+       return { error: 'Ez a Licensz ID már regisztrálva van.' }
+    }
+    return { error: 'Hiba történt az adatbázisba mentés során.' }
+  }
+
+  return { message: 'Játékos sikeresen hozzáadva!' }
+}

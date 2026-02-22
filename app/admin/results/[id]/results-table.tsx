@@ -7,6 +7,7 @@ type Player = {
     id: string
     name: string
     club?: string
+    gender?: string
 }
 
 type Result = {
@@ -32,6 +33,8 @@ export default function ResultsTable({
 }) {
     const [results, setResults] = useState<Result[]>(initialResults)
     const [filterPlayer, setFilterPlayer] = useState('')
+    const [filterGender, setFilterGender] = useState('')
+    const [filterCategory, setFilterCategory] = useState('')
 
     useEffect(() => {
         setResults(initialResults)
@@ -56,6 +59,14 @@ export default function ResultsTable({
                 item.players?.name.toLowerCase().includes(lowerFilter) ||
                 item.players?.club?.toLowerCase().includes(lowerFilter)
             );
+        }
+
+        if (filterGender) {
+            items = items.filter(item => item.players?.gender === filterGender)
+        }
+
+        if (filterCategory) {
+            items = items.filter(item => item.category === filterCategory)
         }
 
         // Sort
@@ -122,14 +133,38 @@ export default function ResultsTable({
                   <span className="text-xs text-slate-500">{filteredAndSortedResults.length} találat</span>
                 </div>
                 
-                {/* Filter Input */}
-                <input 
-                    type="text" 
-                    placeholder="Szűrés játékosra..." 
-                    className="px-3 py-1.5 border border-slate-300 rounded-md text-sm focus:ring-emerald-500 focus:border-emerald-500"
-                    value={filterPlayer}
-                    onChange={(e) => setFilterPlayer(e.target.value)}
-                />
+                {/* Filters */}
+                <div className="flex flex-wrap gap-2">
+                    <select 
+                        className="px-3 py-1.5 border border-slate-300 rounded-md text-sm focus:ring-emerald-500 focus:border-emerald-500"
+                        value={filterCategory}
+                        onChange={(e) => setFilterCategory(e.target.value)}
+                    >
+                        <option value="">Minden Kategória</option>
+                        <option value="Egyes">Egyes</option>
+                        <option value="Páros">Páros</option>
+                        <option value="Vegyes">Vegyes</option>
+                        <option value="Csapat">Csapat</option>
+                    </select>
+
+                    <select 
+                        className="px-3 py-1.5 border border-slate-300 rounded-md text-sm focus:ring-emerald-500 focus:border-emerald-500"
+                        value={filterGender}
+                        onChange={(e) => setFilterGender(e.target.value)}
+                    >
+                        <option value="">Mindkét Nem</option>
+                        <option value="Male">Férfi</option>
+                        <option value="Female">Női</option>
+                    </select>
+
+                    <input 
+                        type="text" 
+                        placeholder="Szűrés játékosra..." 
+                        className="px-3 py-1.5 border border-slate-300 rounded-md text-sm focus:ring-emerald-500 focus:border-emerald-500"
+                        value={filterPlayer}
+                        onChange={(e) => setFilterPlayer(e.target.value)}
+                    />
+                </div>
             </div>
             
             <table className="min-w-full divide-y divide-slate-200">

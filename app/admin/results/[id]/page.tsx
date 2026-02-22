@@ -18,6 +18,31 @@ export default async function EventResultsPage({ params }: { params: Promise<{ i
   // Fetch all players for the dropdown
   const { data: allPlayers } = await supabase.from('players').select('*').order('name')
 
+  // Parse max age constraint
+  const isUCategory = event.age_category && event.age_category !== 'Senior' && event.age_category.startsWith('U');
+  const maxAllowedAge = isUCategory ? parseInt(event.age_category.replace('U', ''), 10) : null;
+  const currentYear = new Date().getFullYear();
+
+  // Filter players for the dropdown based on event constraints
+  const validPlayers = allPlayers?.filter(player => {
+      // Filter by gender if the event is strictly Male or Female
+      if (event.gender && event.gender !== 'Both' && player.gender !== event.gender) {
+          return false;
+      }
+      
+      // Filter by age category limit only if it is a U-category
+      if (isUCategory && maxAllowedAge !== null && player.birth_date) {
+          const birthYear = new Date(player.birth_date).getFullYear()
+          const playerAge = currentYear - birthYear;
+          if (playerAge > maxAllowedAge) {
+              return false;
+          }
+      }
+      
+      // If none of the negative filters matched, include the player
+      return true;
+  }) || [];
+
   // Fetch existing results for this event
   const { data: results } = await supabase
     .from('results')
@@ -57,7 +82,7 @@ export default async function EventResultsPage({ params }: { params: Promise<{ i
          </div>
       </div>
 
-      <ResultForm eventId={event.id} players={allPlayers || []} enabledCategories={enabledCategories} />
+      <ResultForm eventId={event.id} players={validPlayers} enabledCategories={enabledCategories} />
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">

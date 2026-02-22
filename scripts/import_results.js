@@ -14,7 +14,10 @@ if (!SUPABASE_URL || !SUPABASE_KEY) {
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 async function importResults() {
-    const csvPath = path.join(__dirname, '../input/csv_import1.csv');
+    const defaultCsv = path.join(__dirname, '../input/csv_import1.csv');
+    const inputArg = process.argv[2];
+    const csvPath = inputArg ? path.resolve(process.cwd(), inputArg) : defaultCsv;
+    console.log(`Using CSV path: ${csvPath}`);
     
     try {
         const fileContent = fs.readFileSync(csvPath, 'utf-8');

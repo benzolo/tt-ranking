@@ -78,9 +78,22 @@ export default async function PlayersPage({
               <tr key={player.id} className="hover:bg-slate-50 transition-colors">
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{player.name}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{player.license_id || '-'}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{player.gender}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                  {player.gender === 'Female' ? 'Női' : player.gender === 'Male' ? 'Férfi' : player.gender}
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{player.club || '-'}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{player.birth_date ? new Date(player.birth_date).toLocaleDateString() : '-'}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                  {player.birth_date ? (
+                    new Date(player.birth_date).toLocaleDateString()
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-rose-50 text-rose-600 text-xs font-bold border border-rose-200" title="Születési dátum hiányzik">
+                      <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                      </svg>
+                      Hiányzik
+                    </span>
+                  )}
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <Link href={`/admin/players/${player.id}`} className="text-emerald-600 hover:text-emerald-900 mr-4">
                     Szerkesztés
