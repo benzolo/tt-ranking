@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation'
 
-export default function SnapshotSelector({ dates }: { dates: string[] }) {
+export default function SnapshotSelector({ dates }: { dates: { date: string; name: string | null }[] }) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const currentSnapshot = searchParams.get('snapshot') || ''
@@ -32,9 +32,9 @@ export default function SnapshotSelector({ dates }: { dates: string[] }) {
           className="appearance-none bg-slate-900/50 border border-slate-700 text-slate-200 text-sm rounded-lg pl-3 pr-8 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none backdrop-blur-sm transition-all hover:bg-slate-800/50"
         >
           <option value="">Legfrissebb (Aktuális)</option>
-          {dates.map((date) => (
-            <option key={date} value={date}>
-              {new Date(date).toLocaleString('hu-HU')}
+          {dates.map((d) => (
+            <option key={d.date} value={d.date}>
+              {d.name ? d.name : new Date(d.date).toLocaleString('hu-HU')}
             </option>
           ))}
         </select>

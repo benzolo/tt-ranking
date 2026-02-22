@@ -20,6 +20,15 @@ export default function SnapshotControls() {
     return (
         <form action={handleSubmit} className="flex flex-wrap gap-4 items-end">
             <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Megnevezés (opcionális)</label>
+                <input 
+                    type="text" 
+                    name="snapshotName" 
+                    placeholder="Pl. 1. Hét"
+                    className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none w-48"
+                />
+            </div>
+            <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Nem</label>
                 <select name="gender" className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
                     <option value="Both">Mindkettő (Batch)</option>

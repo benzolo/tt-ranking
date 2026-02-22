@@ -23,7 +23,7 @@ const initialState = {
   errors: undefined,
 }
 
-export default function PlayerForm({ player }: { player?: any }) {
+export default function PlayerForm({ player, clubs = [] }: { player?: any, clubs?: any[] }) {
   const updatePlayerWithId = player ? updatePlayer.bind(null, player.id) : createPlayer
   // @ts-ignore - Types compatibility with Server Actions in React 19 RC can be tricky
   const [state, formAction] = useActionState(updatePlayerWithId, initialState)
@@ -72,15 +72,19 @@ export default function PlayerForm({ player }: { player?: any }) {
       </div>
 
       <div>
-        <label htmlFor="club" className="block text-sm font-medium text-slate-700">Egyesület (Opcionális)</label>
-        <input 
-          type="text" 
-          name="club" 
-          id="club" 
-          defaultValue={player?.club || ''}
-          className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-2 border"
-        />
-         {state?.errors?.club && <p className="text-red-500 text-xs mt-1">{state.errors.club[0]}</p>}
+        <label htmlFor="club_id" className="block text-sm font-medium text-slate-700">Egyesület (Opcionális)</label>
+        <select 
+          name="club_id" 
+          id="club_id" 
+          defaultValue={player?.club_id || ''}
+          className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-2 border bg-white"
+        >
+          <option value="">-- Nincs megadva --</option>
+          {clubs.map(club => (
+             <option key={club.id} value={club.id}>{club.name}</option>
+          ))}
+        </select>
+         {state?.errors?.club_id && <p className="text-red-500 text-xs mt-1">{state.errors.club_id[0]}</p>}
       </div>
 
       <div>

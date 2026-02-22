@@ -21,10 +21,11 @@ function SubmitButton() {
   )
 }
 
-export default function ResultForm({ eventId, players, enabledCategories }: { 
+export default function ResultForm({ eventId, players, enabledCategories, clubs }: { 
   eventId: string, 
   players: any[],
-  enabledCategories: string[]
+  enabledCategories: string[],
+  clubs: any[]
 }) {
   const formRef = useRef<HTMLFormElement>(null)
   const router = useRouter()
@@ -178,7 +179,12 @@ export default function ResultForm({ eventId, players, enabledCategories }: {
                      </div>
                      <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1">Egyesület</label>
-                        <input type="text" name="club" className="w-full rounded-lg border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-2.5 border" />
+                        <select name="club_id" className="w-full rounded-lg border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-2.5 border bg-white">
+                           <option value="">-- Nincs megadva --</option>
+                           {clubs.map((club) => (
+                              <option key={club.id} value={club.id}>{club.name}</option>
+                           ))}
+                        </select>
                      </div>
                      
                      <div className="pt-4 flex justify-end gap-3 border-t border-slate-100 mt-6">

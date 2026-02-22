@@ -99,7 +99,13 @@ export default async function Home({
                       </div>
                     </td>
                     <td className="px-4 py-3 text-slate-400 font-medium text-xs">
-                      {player.club || '-'}
+                      {player.clubId ? (
+                        <Link href={`/club/${player.clubId}`} className="hover:text-emerald-400 transition-colors">
+                          {player.club}
+                        </Link>
+                      ) : (
+                        player.club || '-'
+                      )}
                     </td>
                     <td className="px-4 py-3 text-center">
                       <span className="bg-slate-800 px-2 py-0.5 rounded text-slate-500 font-bold text-[10px]">

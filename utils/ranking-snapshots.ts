@@ -4,6 +4,7 @@ export interface RankingEntry {
   playerId: string
   playerName: string
   club: string | null
+  clubId?: string | null
   gender: string
   totalPoints: number
   eventsCount: number
@@ -42,20 +43,20 @@ export interface SnapshotMetadata {
 /**
  * Generate a new ranking snapshot
  */
-export async function generateRankingSnapshot(genderRequest: string, categoryRequest: string): Promise<{ success: boolean; message: string; count?: number }> {
+export async function generateRankingSnapshot(genderRequest: string, categoryRequest: string, name?: string | null): Promise<{ success: boolean; message: string; count?: number }> {
   const supabase = await createClient()
   
   // Handle Batch Generation
   if (genderRequest === 'Both') {
-    await generateRankingSnapshot('Male', categoryRequest)
-    await generateRankingSnapshot('Female', categoryRequest)
+    await generateRankingSnapshot('Male', categoryRequest, name)
+    await generateRankingSnapshot('Female', categoryRequest, name)
     return { success: true, message: 'Snapshots generation triggered for both genders' }
   }
 
   if (categoryRequest === 'All') {
     const categories = ['Senior', 'U19', 'U15', 'U13', 'U11'] // TODO: Define these constants somewhere shared
     for (const cat of categories) {
-      await generateRankingSnapshot(genderRequest, cat)
+      await generateRankingSnapshot(genderRequest, cat, name)
     }
     return { success: true, message: 'Snapshots generation triggered for all categories' }
   }
@@ -76,6 +77,7 @@ export async function generateRankingSnapshot(genderRequest: string, categoryReq
       snapshot_date: snapshotDate,
       gender: genderRequest,
       age_category: categoryRequest,
+      name: name && name.trim() !== '' ? name.trim() : null,
       is_public: false, // Default private
       description: `Auto-generated ${genderRequest} ${categoryRequest} ranking`
     })
@@ -137,12 +139,12 @@ export async function getLatestSnapshotDate(gender?: string, ageCategory?: strin
 /**
  * Get all available PUBLIC snapshot dates for selector
  */
-export async function getPublicSnapshotDates(gender?: string, ageCategory?: string): Promise<string[]> {
+export async function getPublicSnapshotDates(gender?: string, ageCategory?: string): Promise<{ date: string; name: string | null }[]> {
   const supabase = await createClient()
 
   let query = supabase
     .from('snapshot_metadata')
-    .select('snapshot_date')
+    .select('snapshot_date, name')
     .eq('is_public', true)
     
   if (gender) query = query.eq('gender', gender)
@@ -151,7 +153,7 @@ export async function getPublicSnapshotDates(gender?: string, ageCategory?: stri
   const { data } = await query
     .order('snapshot_date', { ascending: false })
 
-  return data?.map(d => d.snapshot_date) || []
+  return data?.map(d => ({ date: d.snapshot_date, name: d.name })) || []
 }
 
 /**
@@ -203,7 +205,7 @@ export async function getRankingsWithHistory(gender?: string, ageCategory?: stri
       player_id,
       total_points,
       events_count,
-      player:players!inner (id, name, gender, club, birth_date)
+      player:players!inner (id, name, gender, club_id, clubs(name), birth_date)
     `)
     .eq('metadata_id', meta.id)
 
@@ -212,7 +214,8 @@ export async function getRankingsWithHistory(gender?: string, ageCategory?: stri
   let currentEntries = latestData.map((s: any) => ({
     playerId: s.player_id,
     playerName: s.player.name,
-    club: s.player.club,
+    clubId: s.player.club_id,
+    club: s.player.clubs?.name,
     gender: s.player.gender,
     birthDate: s.player.birth_date,
     totalPoints: s.total_points,
@@ -296,13 +299,18 @@ export async function getRankingsWithHistory(gender?: string, ageCategory?: stri
 /**
  * Get player ranking history for charts
  */
-export async function getPlayerRankingHistory(playerId: string): Promise<RankingSnapshot[]> {
+export async function getPlayerRankingHistory(playerId: string): Promise<any[]> {
   const supabase = await createClient()
 
+  // We need to fetch the snapshots and join with metadata to get the name and check if it's public
   const { data } = await supabase
     .from('ranking_snapshots')
-    .select('*')
+    .select(`
+      *,
+      metadata:snapshot_metadata!inner(name, is_public)
+    `)
     .eq('player_id', playerId)
+    .eq('metadata.is_public', true)
     .order('snapshot_date', { ascending: true })
 
   return data || []
@@ -321,7 +329,7 @@ async function getRankingsForSnapshot(gender?: string, ageCategory?: string): Pr
     .select(`
       points,
       category,
-      player:players!inner (id, name, gender, club, birth_date),
+      player:players!inner (id, name, gender, club_id, clubs(name), birth_date),
       event:events!inner (id, type, date, validity_date, age_category)
     `)
     .gte('event.validity_date', today)
@@ -405,8 +413,9 @@ async function getRankingsForSnapshot(gender?: string, ageCategory?: string): Pr
     rankingEntries.push({
       playerId: player.id,
       playerName: player.name,
+      clubId: player.club_id,
+      club: player.clubs?.name,
       gender: player.gender,
-      club: player.club,
       totalPoints,
       eventsCount
     })

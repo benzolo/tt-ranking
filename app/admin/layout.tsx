@@ -29,6 +29,9 @@ export default async function AdminLayout({
               <Link href="/admin/players" className="block px-4 py-2.5 rounded-lg hover:bg-slate-800 transition-colors text-slate-300 hover:text-white">
                 Játékosok
               </Link>
+              <Link href="/admin/clubs" className="block px-4 py-2.5 rounded-lg hover:bg-slate-800 transition-colors text-slate-300 hover:text-white">
+                Egyesületek
+              </Link>
               <Link href="/admin/results" className="block px-4 py-2.5 rounded-lg hover:bg-slate-800 transition-colors text-slate-300 hover:text-white">
                 Eredmények Rögzítése
               </Link>

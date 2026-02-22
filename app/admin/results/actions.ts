@@ -142,7 +142,7 @@ export async function addQuickPlayer(formData: FormData) {
   const name = formData.get('name') as string
   const license_id = formData.get('license_id') as string | null
   const gender = formData.get('gender') as 'Male' | 'Female'
-  const club = formData.get('club') as string | null
+  const club_id = formData.get('club_id') as string | null
   const birth_dateParam = formData.get('birth_date') as string | null
 
   if (!name || typeof name !== 'string' || name.trim() === '') {
@@ -163,7 +163,7 @@ export async function addQuickPlayer(formData: FormData) {
     name: name.trim(),
     license_id: license_id ? license_id.trim() : null,
     gender,
-    club: club ? club.trim() : null,
+    club_id: club_id || null,
     birth_date
   })
 

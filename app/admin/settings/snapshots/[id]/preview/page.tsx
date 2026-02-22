@@ -25,7 +25,7 @@ export default async function SnapshotPreviewPage({ params }: { params: { id: st
       rank_position,
       total_points,
       events_count,
-      player:players (name, club, gender)
+      player:players (name, clubs(name), gender)
     `)
     .eq('metadata_id', id)
     .order('rank_position', { ascending: true })
@@ -89,7 +89,7 @@ export default async function SnapshotPreviewPage({ params }: { params: { id: st
                         <tr key={r.rank_position}>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{r.rank_position}.</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">{r.player?.name}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{r.player?.club || '-'}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{r.player?.clubs?.name || '-'}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 text-right font-bold">{r.total_points}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 text-center">{r.events_count}</td>
                         </tr>

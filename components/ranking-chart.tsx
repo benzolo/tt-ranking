@@ -22,6 +22,17 @@ export default function RankingChart({ data }: RankingChartProps) {
     )
   }
 
+  // Calculate dynamic ticks that always include 1
+  const maxRank = Math.max(5, ...data.map(d => d.rank))
+  const ticks = [1]
+  const step = Math.max(1, Math.ceil(maxRank / 5))
+  for (let i = step; i <= maxRank; i += step) {
+    if (i > 1) ticks.push(i)
+  }
+  if (ticks[ticks.length - 1] < maxRank) {
+    ticks.push(maxRank)
+  }
+
   return (
     <ResponsiveContainer width="100%" height={300}>
       <LineChart data={data} margin={{ top: 20, right: 30, left: 10, bottom: 5 }}>
@@ -42,6 +53,8 @@ export default function RankingChart({ data }: RankingChartProps) {
           tickLine={false}
           dx={-10}
           allowDecimals={false}
+          domain={[1, 'dataMax']}
+          ticks={ticks}
         />
         <Tooltip 
           contentStyle={{ 

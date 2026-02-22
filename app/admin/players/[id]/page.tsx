@@ -7,6 +7,11 @@ export default async function EditPlayerPage({ params }: { params: Promise<{ id:
   const supabase = await createClient()
   const { data: player } = await supabase.from('players').select('*').eq('id', id).single()
 
+  const { data: clubs } = await supabase
+    .from('clubs')
+    .select('*')
+    .order('name')
+
   if (!player) {
     notFound()
   }
@@ -14,7 +19,7 @@ export default async function EditPlayerPage({ params }: { params: Promise<{ id:
   return (
     <div>
       <h1 className="text-2xl font-bold text-slate-900 mb-6">Edit Player</h1>
-      <PlayerForm player={player} />
+      <PlayerForm player={player} clubs={clubs || []} />
     </div>
   )
 }

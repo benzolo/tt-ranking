@@ -12,7 +12,7 @@ export default async function PlayerProfile({ params }: { params: { id: string }
   // Fetch player details
   const { data: player } = await supabase
     .from('players')
-    .select('*')
+    .select('*, clubs(name)')
     .eq('id', id)
     .single()
 
@@ -33,26 +33,45 @@ export default async function PlayerProfile({ params }: { params: { id: string }
   // Fetch ranking history
   const rankingHistory = await getPlayerRankingHistory(id)
 
-  // Transform ranking history for chart
-  // Transform ranking history for chart
-  const chartData = rankingHistory.map(snapshot => {
-    // Find the latest event date prior to this snapshot
-    // This represents the "Effective Date" of the ranking
-    const effectiveEvent = results?.find(r => {
-      const eventDate = (r.event as any).date
-      return eventDate <= snapshot.snapshot_date
-    })
+  // Fetch all events to map snapshot dates to event dates
+  const { data: allEventsData } = await supabase
+    .from('events')
+    .select('date')
+    .order('date', { ascending: false })
 
-    const dateToUse = effectiveEvent 
-      ? (effectiveEvent.event as any).date 
-      : snapshot.snapshot_date
+  // Transform ranking history for chart
+  const rawChartData = rankingHistory.map(snapshot => {
+    // Find the latest event in the system that happened on or before this snapshot
+    const eventForSnapshot = allEventsData?.find(e => e.date <= snapshot.snapshot_date)
+    const dateToUse = eventForSnapshot ? eventForSnapshot.date : snapshot.snapshot_date
+    const safeDate = dateToUse.includes('T') ? dateToUse : `${dateToUse}T12:00:00`
+
+    const fallbackDateStr = new Date(safeDate).toLocaleDateString('hu-HU', { month: 'short', day: 'numeric' })
 
     return {
-      date: new Date(dateToUse).toLocaleDateString('hu-HU', { month: 'short', day: 'numeric' }),
+      dateStr: snapshot.metadata?.name ? snapshot.metadata.name : fallbackDateStr,
       rank: snapshot.rank_position,
       points: snapshot.total_points,
     }
   })
+
+  // Deduplicate: If multiple snapshots map to the same event date, keep the latest one
+  const deduplicatedChartData: any[] = []
+  const seenDates = new Set()
+  
+  for (let i = rawChartData.length - 1; i >= 0; i--) {
+    const item = rawChartData[i]
+    if (!seenDates.has(item.dateStr)) {
+      seenDates.add(item.dateStr)
+      deduplicatedChartData.unshift(item)
+    }
+  }
+
+  const chartData = deduplicatedChartData.map(item => ({
+    date: item.dateStr,
+    rank: item.rank,
+    points: item.points
+  }))
 
   const latestSnapshot = rankingHistory[rankingHistory.length - 1]
   const currentRank = latestSnapshot?.rank_position
@@ -109,10 +128,12 @@ export default async function PlayerProfile({ params }: { params: { id: string }
               <h1 className="text-4xl font-black text-white tracking-tight leading-none mb-2">{player.name}</h1>
               <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-widest text-slate-500">
                 <span className="bg-slate-800 px-2 py-0.5 rounded text-slate-400">{player.gender === 'Male' ? 'Férfi' : 'Nő'}</span>
-                {player.club && (
+                {player.club_id && player.clubs && (
                   <>
                     <span className="text-slate-700">•</span>
-                    <span className="text-emerald-500/80">{player.club}</span>
+                    <Link href={`/club/${player.club_id}`} className="text-emerald-500/80 hover:text-emerald-400 transition-colors">
+                      {player.clubs.name}
+                    </Link>
                   </>
                 )}
                 {player.license_id && (

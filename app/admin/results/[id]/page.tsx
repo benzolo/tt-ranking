@@ -18,6 +18,9 @@ export default async function EventResultsPage({ params }: { params: Promise<{ i
   // Fetch all players for the dropdown
   const { data: allPlayers } = await supabase.from('players').select('*').order('name')
 
+  // Fetch all clubs for the quick add player modal
+  const { data: clubs } = await supabase.from('clubs').select('*').order('name')
+
   // Parse max age constraint
   const isUCategory = event.age_category && event.age_category !== 'Senior' && event.age_category.startsWith('U');
   const maxAllowedAge = isUCategory ? parseInt(event.age_category.replace('U', ''), 10) : null;
@@ -82,7 +85,7 @@ export default async function EventResultsPage({ params }: { params: Promise<{ i
          </div>
       </div>
 
-      <ResultForm eventId={event.id} players={validPlayers} enabledCategories={enabledCategories} />
+      <ResultForm eventId={event.id} players={validPlayers} enabledCategories={enabledCategories} clubs={clubs || []} />
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">

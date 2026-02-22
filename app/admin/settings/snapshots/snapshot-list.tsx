@@ -1,10 +1,13 @@
 'use client'
 
-import { toggleVisibilityAction, downloadCsvAction } from './actions'
+import { toggleVisibilityAction, downloadCsvAction, renameSnapshotAction } from './actions'
 import { useState } from 'react'
 import Link from 'next/link'
 
 export default function SnapshotList({ snapshots }: { snapshots: any[] }) {
+    const [editingId, setEditingId] = useState<string | null>(null)
+    const [editName, setEditName] = useState('')
+
     const handleToggle = async (id: string, currentStatus: boolean) => {
         await toggleVisibilityAction(id, !currentStatus)
     }
@@ -24,11 +27,31 @@ export default function SnapshotList({ snapshots }: { snapshots: any[] }) {
         }
     }
 
+    const startEditing = (id: string, currentName: string | null) => {
+        setEditingId(id)
+        setEditName(currentName || '')
+    }
+
+    const handleRename = async (id: string) => {
+        if (editName.trim() === '') {
+            await renameSnapshotAction(id, null)
+        } else {
+            await renameSnapshotAction(id, editName)
+        }
+        setEditingId(null)
+    }
+
+    const cancelEditing = () => {
+        setEditingId(null)
+        setEditName('')
+    }
+
     return (
         <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-slate-200">
                 <thead className="bg-slate-50">
                     <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Megnevezés</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Dátum</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Nem</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Kategória</th>
@@ -40,6 +63,42 @@ export default function SnapshotList({ snapshots }: { snapshots: any[] }) {
                 <tbody className="bg-white divide-y divide-slate-200">
                     {snapshots.map((s) => (
                         <tr key={s.id} className="hover:bg-slate-50">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 font-bold group">
+                                {editingId === s.id ? (
+                                    <div className="flex items-center gap-2">
+                                        <input 
+                                            type="text" 
+                                            value={editName}
+                                            onChange={(e) => setEditName(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') handleRename(s.id)
+                                                if (e.key === 'Escape') cancelEditing()
+                                            }}
+                                            className="border border-slate-300 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-emerald-500 outline-none w-32"
+                                            autoFocus
+                                        />
+                                        <button onClick={() => handleRename(s.id)} className="text-emerald-600 hover:text-emerald-800" title="Mentés">
+                                            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                                        </button>
+                                        <button onClick={cancelEditing} className="text-slate-400 hover:text-slate-600" title="Mégsem">
+                                            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center justify-between gap-4">
+                                        <span>{s.name || <span className="text-slate-400 font-normal italic">Nincs név</span>}</span>
+                                        <button 
+                                            onClick={() => startEditing(s.id, s.name)} 
+                                            className="text-slate-400 hover:text-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            title="Átnevezés"
+                                        >
+                                            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                )}
+                            </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 font-medium">
                                 {new Date(s.snapshot_date).toLocaleString('hu-HU')}
                             </td>

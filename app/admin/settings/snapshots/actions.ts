@@ -8,13 +8,14 @@ import { generateSnapshotCsv } from '@/utils/csv-export'
 export async function generateSnapshotAction(formData: FormData) {
   const gender = formData.get('gender') as string
   const category = formData.get('category') as string
+  const snapshotName = formData.get('snapshotName') as string | null
 
   if (!gender || !category) {
     return { success: false, message: 'Gender and Category are required' }
   }
 
   try {
-    const result = await generateRankingSnapshot(gender, category)
+    const result = await generateRankingSnapshot(gender, category, snapshotName)
     revalidatePath('/admin/settings/snapshots')
     return result
   } catch (error) {
@@ -51,4 +52,24 @@ export async function downloadCsvAction(id: string) {
         console.error(e)
         return { success: false, message: 'Failed to generate CSV' }
     }
+}
+
+export async function renameSnapshotAction(id: string, newName: string | null) {
+  const supabase = await createClient()
+
+  // Empty string becomes null mapping
+  const cleanedName = newName && newName.trim() !== '' ? newName.trim() : null
+
+  const { error } = await supabase
+    .from('snapshot_metadata')
+    .update({ name: cleanedName })
+    .eq('id', id)
+
+  if (error) {
+    console.error('Error renaming snapshot:', error)
+    return { success: false, message: 'Failed to rename snapshot' }
+  }
+
+  revalidatePath('/admin/settings/snapshots')
+  return { success: true, message: 'Snapshot renamed successfully' }
 }
